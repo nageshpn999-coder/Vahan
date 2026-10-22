@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="te">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vahan — మీ వాహనం అమ్మండి</title>
+<meta name="theme-color" content="#14213d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Guntur:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="header"></header>
+<main class="wrap">
+
+  <!-- లాగిన్ -->
+  <section class="form" id="loginBox" hidden>
+    <h2 id="loginTitle"></h2>
+    <p class="note" id="loginNote"></p>
+    <div class="field" id="phoneField">
+      <label for="phone">📱 Mobile</label>
+      <div style="display:flex;gap:8px"><span class="btn btn-ghost" style="pointer-events:none">+91</span>
+        <input id="phone" type="tel" inputmode="numeric" maxlength="10" placeholder="9XXXXXXXXX"></div>
+    </div>
+    <div class="field" id="otpField" hidden>
+      <label for="otp">OTP</label>
+      <input id="otp" type="text" inputmode="numeric" maxlength="6" placeholder="••••••">
+    </div>
+    <button class="btn btn-block" id="otpBtn"></button>
+    <div id="recaptcha"></div>
+  </section>
+
+  <!-- ఫారం -->
+  <section class="form" id="sellBox" hidden>
+    <h2 id="formTitle"></h2>
+    <div class="steps"><i class="on"></i><i></i><i></i></div>
+
+    <!-- దశ 1: వాహన వివరాలు -->
+    <div data-step="1">
+      <div class="field"><label id="lblCat"></label><div class="pick" id="catPick"></div></div>
+      <div class="two">
+        <div class="field"><label for="brand" id="lblBrand"></label><select id="brand"></select></div>
+        <div class="field" id="brandOtherF" hidden><label for="brandOther" id="lblBrandOther"></label><input id="brandOther" maxlength="40"></div>
+      </div>
+      <div class="field"><label for="model" id="lblModel"></label><input id="model" list="modelList" maxlength="60" autocomplete="off"><datalist id="modelList"></datalist></div>
+      <div class="two">
+        <div class="field"><label for="year" id="lblYear"></label><select id="year"></select></div>
+        <div class="field"><label for="km" id="lblKm"></label><input id="km" type="number" inputmode="numeric" min="0" max="2000000"><small id="kmHint"></small></div>
+      </div>
+      <div class="field"><label id="lblFuel"></label><div class="pick" id="fuelPick"></div></div>
+      <div class="ev-box" id="evBox" hidden>
+        <b id="lblEv"></b>
+        <div class="two" style="margin-top:8px">
+          <div class="field"><label for="evHealth" id="lblEvHealth"></label><input id="evHealth" type="number" inputmode="numeric" min="1" max="100" placeholder="90"></div>
+          <div class="field"><label for="evRange" id="lblEvRange"></label><input id="evRange" type="number" inputmode="numeric" min="1" max="1500" placeholder="100"></div>
+          <div class="field"><label for="evWarranty" id="lblEvWarranty"></label><input id="evWarranty" type="number" inputmode="numeric" min="0" max="120" placeholder="12"></div>
+          <div class="field"><label for="evCharge" id="lblEvCharge"></label><input id="evCharge" type="number" inputmode="decimal" min="0" max="48" step="0.5" placeholder="5"></div>
+        </div>
+        <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="evCharger"> <span id="lblEvCharger"></span></label>
+      </div>
+      <div class="two">
+        <div class="field"><label for="owners" id="lblOwners"></label><select id="owners"><option>1</option><option>2</option><option>3</option><option value="4">4+</option></select></div>
+        <div class="field" id="transF" hidden><label for="trans" id="lblTrans"></label><select id="trans"><option value="manual"></option><option value="automatic"></option></select></div>
+      </div>
+    </div>
+
+    <!-- దశ 2: ఫోటోలు -->
+    <div data-step="2" hidden>
+      <div class="field"><label id="lblPhotos"></label><small id="photoHint"></small></div>
+      <div class="photos" id="photos"></div>
+      <input type="file" id="fileIn" accept="image/*" multiple hidden>
+    </div>
+
+    <!-- దశ 3: ధర & లొకేషన్ -->
+    <div data-step="3" hidden>
+      <div class="field"><label for="price" id="lblPrice"></label><input id="price" type="number" inputmode="numeric" min="1000" max="50000000"><small id="priceWords"></small></div>
+      <label style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><input type="checkbox" id="nego" checked> <span id="lblNego"></span></label>
+      <div class="field"><label id="lblLoc"></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" id="locGps" type="button"></button>
+          <select id="locDist" style="flex:1;min-width:160px;border:1px solid var(--line);border-radius:8px;padding:6px"></select>
+        </div>
+        <small id="locStatus"></small>
+      </div>
+      <div class="field"><label for="place" id="lblPlace"></label><input id="place" maxlength="40"></div>
+      <div class="field"><label for="desc" id="lblDesc"></label><textarea id="desc" maxlength="1000"></textarea></div>
+      <div class="field"><label for="oname" id="lblName"></label><input id="oname" maxlength="40"></div>
+    </div>
+
+    <div class="formnav">
+      <button class="btn btn-ghost" id="backBtn" type="button"></button>
+      <button class="btn" id="nextBtn" type="button"></button>
+    </div>
+    <p class="note" id="status" style="margin-top:10px"></p>
+  </section>
+</main>
+<footer>© Vahan</footer>
+<script type="module" src="js/sell.js"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+rules_version = '2';
+// Vahan — Firestore సెక్యూరిటీ రూల్స్
+// Firebase Console → Firestore Database → Rules లో ఇది మొత్తం పేస్ట్ చేసి Publish చేయండి.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function nowMs() { return request.time.toMillis(); }
+    function maxExpiry() { return nowMs() + 61 * 86400000; }
+
+    function validVehicle(d) {
+      return d.category in ['bike', 'scooter', 'car', 'auto', 'tractor', 'commercial', 'other']
+        && d.fuel in ['petrol', 'diesel', 'cng', 'electric', 'hybrid']
+        && d.brand is string && d.brand.size() > 0 && d.brand.size() <= 40
+        && d.model is string && d.model.size() > 0 && d.model.size() <= 60
+        && d.year is number && d.year >= 1980 && d.year <= 2035
+        && d.kmDriven is number && d.kmDriven >= 0 && d.kmDriven <= 2000000
+        && d.price is number && d.price >= 1000 && d.price <= 50000000
+        && d.photos is list && d.photos.size() >= 1 && d.photos.size() <= 8
+        && d.lat is number && d.lng is number
+        && d.geohash is string && d.geohash.size() <= 12
+        && d.description is string && d.description.size() <= 1000
+        && d.ownerName is string && d.ownerName.size() > 0 && d.ownerName.size() <= 40
+        && d.place is string && d.place.size() <= 40;
+    }
+
+    match /vehicles/{id} {
+      // చదవడం: లైవ్ వాహనాలు అందరికీ; పెండింగ్/రిజెక్ట్ అయినవి ఓనర్, అడ్మిన్‌కు మాత్రమే
+      allow read: if resource.data.status == 'approved'
+                  || (signedIn() && resource.data.ownerUid == request.auth.uid)
+                  || isAdmin();
+
+      // కొత్త లిస్టింగ్: OTP లాగిన్ తప్పనిసరి, నంబర్ మార్చలేరు, ఎప్పుడూ 'pending' గా మొదలవుతుంది
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerPhone == request.auth.token.phone_number
+        && request.resource.data.status == 'pending'
+        && request.resource.data.views == 0
+        && !request.resource.data.keys().hasAny(['featuredUntil', 'dealer', 'approvedAt', 'rejectReason'])
+        && request.resource.data.expiresAt <= maxExpiry()
+        && validVehicle(request.resource.data);
+
+      // ఓనర్ ఎడిట్: ఫీచర్డ్/డీలర్/వ్యూస్ మార్చలేరు; స్టేటస్‌ను 'pending' లేదా 'sold' కు మాత్రమే
+      allow update: if signedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && !request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['ownerUid', 'ownerPhone', 'featuredUntil', 'dealer', 'views', 'createdAt', 'approvedAt', 'rejectReason'])
+        && (request.resource.data.status == resource.data.status
+            || request.resource.data.status in ['pending', 'sold'])
+        && request.resource.data.expiresAt <= maxExpiry()
+        && validVehicle(request.resource.data);
+
+      // వ్యూస్ లెక్క: ఎవరైనా ఒక్కటి మాత్రమే పెంచగలరు
+      allow update: if resource.data.status == 'approved'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
+        && request.resource.data.views == resource.data.views + 1;
+
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+
+      // అడ్మిన్ అన్నీ చేయగలరు
+      allow update, delete: if isAdmin();
+    }
+
+    match /reports/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['vehicleId', 'reason', 'createdAt', 'status'])
+        && request.resource.data.vehicleId is string && request.resource.data.vehicleId.size() <= 40
+        && request.resource.data.reason is string && request.resource.data.reason.size() <= 300
+        && request.resource.data.status == 'open';
+      allow read, update, delete: if isAdmin();
+    }
+
+    // అడ్మిన్ జాబితా — Console నుంచి మాత్రమే జోడించండి
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}

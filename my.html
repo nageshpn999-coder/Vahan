@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="te">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vahan — నా వాహనాలు</title>
+<meta name="theme-color" content="#14213d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Guntur:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="header"></header>
+<main class="wrap">
+  <div class="toolbar" style="margin-top:16px">
+    <h2 style="margin:0" data-i18n="my"></h2>
+    <div style="display:flex;gap:8px">
+      <a class="btn btn-ghost btn-sm" href="admin.html" id="adminLink" hidden data-i18n="admin"></a>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn" hidden data-i18n="logout"></button>
+    </div>
+  </div>
+  <div id="list"><p class="empty" data-i18n="loading"></p></div>
+</main>
+<footer>© Vahan</footer>
+<script type="module" src="js/my.js"></script>
+</body>
+</html>

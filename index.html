@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="te">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vahan — దగ్గరలోని వాహనాలు కొనండి, అమ్మండి</title>
+<meta name="description" content="మీ దగ్గరలోని సెకండ్ హ్యాండ్ బైక్‌లు, స్కూటర్లు, కార్లు, ఆటోలు, ట్రాక్టర్లు, ఎలక్ట్రిక్ వాహనాలు. ఉచితంగా అమ్మండి.">
+<meta name="theme-color" content="#14213d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Guntur:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="header"></header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1 data-i18n="tagline"></h1>
+    <div class="searchrow">
+      <input id="q" type="search" data-i18n-ph="searchPh" autocomplete="off">
+      <button class="btn btn-sell" id="filterBtn" data-i18n="filters"></button>
+    </div>
+    <div class="locrow">
+      <button class="chip" id="gpsBtn" data-i18n="useGps"></button>
+      <select id="districtSel" aria-label="District"></select>
+      <span class="locname" id="locName"></span>
+    </div>
+    <div class="locrow" id="radiusRow"></div>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="cats" id="cats"></div>
+
+  <div class="filters" id="filters">
+    <div class="fgrid">
+      <label><span data-i18n="fuel"></span><select id="fFuel"></select></label>
+      <label><span data-i18n="yearFrom"></span><input id="fYear" type="number" inputmode="numeric" min="1990" max="2030" placeholder="2015"></label>
+      <label><span data-i18n="minPrice"></span><input id="fMin" type="number" inputmode="numeric" min="0" placeholder="₹"></label>
+      <label><span data-i18n="maxPrice"></span><input id="fMax" type="number" inputmode="numeric" min="0" placeholder="₹"></label>
+    </div>
+    <div class="frow">
+      <button class="btn btn-ghost btn-sm" id="fReset" data-i18n="reset"></button>
+      <button class="btn btn-sm" id="fApply" data-i18n="apply"></button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span class="count" id="count"></span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="chip" id="evBtn" style="color:var(--ev);border-color:#bbf7d0;background:#f0fdf4" data-i18n="evOnly"></button>
+      <select id="sortSel" aria-label="Sort"></select>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden></div>
+  <div class="more"><button class="btn btn-ghost" id="moreBtn" hidden data-i18n="loadMore"></button></div>
+</main>
+
+<footer>© Vahan · <a href="sell.html" data-i18n="sell"></a> · <a href="my.html" data-i18n="my"></a></footer>
+<script type="module" src="js/home.js"></script>
+</body>
+</html>
