@@ -1,7 +1,7 @@
 // అమ్మే పేజీ: లాగిన్ (OTP) + 3 దశల అప్‌లోడ్ ఫారం + ఎడిట్
 import * as geofire from "https://cdn.jsdelivr.net/npm/geofire-common@6.0.0/+esm";
 import {
-  DEMO, site, auth, db, fb, t, getLang, applyI18n, renderHeader, fmtPrice, currentUser, gps, toast, esc
+  DEMO, site, auth, db, fb, t, getLang, applyI18n, renderHeader, fmtPrice, currentUser, gps, toast, esc, distLabel
 } from "./common.js";
 import { cloudinary } from "./config.js";
 import { CATEGORIES, FUELS, BRANDS, DISTRICTS } from "./data.js";
@@ -119,23 +119,25 @@ function buildForm() {
   const y = new Date().getFullYear();
   $("year").innerHTML = Array.from({ length: 36 }, (_, i) => `<option>${y - i}</option>`).join("");
   $("brand").onchange = syncBrand;
-  $("locDist").innerHTML = `<option value="">${L.dist}</option>` + DISTRICTS.map(([n]) => `<option>${n}</option>`).join("");
+  $("locDist").innerHTML = `<option value="">${L.dist}</option>` + DISTRICTS.map(([n]) => `<option value="${n}">${distLabel(n)}</option>`).join("");
   $("locDist").onchange = (e) => {
     const d = DISTRICTS.find(x => x[0] === e.target.value); if (!d) return;
     f.district = d[0];
     if (!f.gps) { f.lat = d[1]; f.lng = d[2]; }
-    $("locStatus").textContent = L.locOk + (f.gps ? " (GPS)" : ""); $("locStatus").className = "ok";
+    showLocOk();
   };
   $("locGps").onclick = async () => {
+    $("locGps").textContent = te ? "⏳ లొకేషన్ తీసుకుంటోంది…" : "⏳ Getting location…";
     try {
       const p = await gps(); f.lat = p.lat; f.lng = p.lng; f.gps = true;
-      $("locStatus").textContent = L.locOk + " (GPS)"; $("locStatus").className = "ok";
       if (!f.district) { // దగ్గరలోని జిల్లా ఆటోమేటిక్‌గా
         let best = null, bd = 1e9;
         for (const d of DISTRICTS) { const dd = (d[1] - p.lat) ** 2 + (d[2] - p.lng) ** 2; if (dd < bd) { bd = dd; best = d[0]; } }
         f.district = best; $("locDist").value = best;
       }
+      showLocOk();
     } catch { toast(te ? "GPS అనుమతి ఇవ్వలేదు. జిల్లా ఎంచుకోండి." : "GPS not allowed. Choose a district."); }
+    $("locGps").textContent = L.gps;
   };
   $("price").oninput = () => { const n = Number($("price").value); $("priceWords").textContent = n ? fmtPrice(n) : ""; };
   $("fileIn").onchange = addFiles;
@@ -159,7 +161,14 @@ function prefill(v) {
   if (v.ev) { $("evHealth").value = v.ev.batteryHealth ?? ""; $("evRange").value = v.ev.rangeKm ?? ""; $("evWarranty").value = v.ev.batteryWarrantyMonths ?? ""; $("evCharge").value = v.ev.chargeTimeHrs ?? ""; $("evCharger").checked = !!v.ev.chargerIncluded; }
   $("price").value = v.price; $("price").oninput(); $("nego").checked = !!v.negotiable;
   $("locDist").value = v.district || ""; $("place").value = v.place || ""; $("desc").value = v.description || ""; $("oname").value = v.ownerName || "";
-  $("locStatus").textContent = L.locOk; $("locStatus").className = "ok";
+  showLocOk();
+}
+
+// లొకేషన్ సెట్ అయినప్పుడు ఆకుపచ్చ ✅ బాక్స్: "లొకేషన్ సెట్ అయింది — నారాయణపేట జిల్లా (GPS)"
+function showLocOk() {
+  const el = $("locStatus");
+  el.textContent = `✅ ${L.locOk.replace("✓ ", "")}${f.district ? " — " + distLabel(f.district) : ""}${f.gps ? " (GPS)" : ""}`;
+  el.className = "locok";
 }
 
 function syncCat() {

@@ -1,7 +1,7 @@
 // వాహనం వివరాల పేజీ
 import {
   DEMO, db, fb, t, getLang, applyI18n, renderHeader, esc, fmtPrice, fmtKm, fmtDist, timeAgo,
-  catLabel, fuelLabel, title, waLink, haversine, savedLoc, isLive, currentUser, toast
+  catLabel, fuelLabel, title, waLink, haversine, savedLoc, isLive, currentUser, toast, placeLabel
 } from "./common.js";
 import { SAMPLE } from "./data.js";
 
@@ -70,7 +70,7 @@ function render(v, isOwner) {
     <div class="panel">
       <div class="dprice">${fmtPrice(v.price)} <span class="note">${v.negotiable ? t("negotiable") : t("fixed")}</span></div>
       <div class="dtitle">${esc(name)}</div>
-      <div class="note">📍 ${esc([v.place, v.district].filter(Boolean).join(", "))}${dist != null ? " · " + fmtDist(dist) : ""} · ${t("posted")} ${timeAgo(v.createdAt)} · 👁 ${v.views || 0}</div>
+      <div class="note">📍 ${esc(placeLabel(v))}${dist != null ? " · " + fmtDist(dist) : ""} · ${t("posted")} ${timeAgo(v.createdAt)} · 👁 ${v.views || 0}</div>
       <div class="specs" style="margin-top:12px">
         ${spec("year", v.year)}
         ${spec("kmDriven", v.kmDriven != null ? fmtKm(v.kmDriven) : "")}

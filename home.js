@@ -2,7 +2,7 @@
 import * as geofire from "https://cdn.jsdelivr.net/npm/geofire-common@6.0.0/+esm";
 import {
   DEMO, db, fb, t, getLang, applyI18n, renderHeader, cardHTML, catLabel, fuelLabel,
-  haversine, isFeatured, isLive, savedLoc, saveLoc, gps, toast
+  haversine, isFeatured, isLive, savedLoc, saveLoc, gps, toast, distLabel, distName
 } from "./common.js";
 import { CATEGORIES, FUELS, DISTRICTS, SAMPLE } from "./data.js";
 
@@ -38,7 +38,7 @@ function buildControls() {
 
   // జిల్లాలు
   $("districtSel").innerHTML = `<option value="">${t("chooseDistrict")}</option>` +
-    DISTRICTS.map(([n]) => `<option>${n}</option>`).join("");
+    DISTRICTS.map(([n]) => `<option value="${n}">${distLabel(n)}</option>`).join("");
   $("districtSel").onchange = (e) => {
     const d = DISTRICTS.find(x => x[0] === e.target.value); if (!d) return;
     setLoc({ lat: d[1], lng: d[2], label: d[0] });
@@ -121,7 +121,7 @@ function render() {
   document.querySelectorAll("#radiusRow [data-r]").forEach(b => b.classList.toggle("on", Number(b.dataset.r) === state.radius));
   document.querySelectorAll("#cats [data-c]").forEach(b => b.classList.toggle("on", b.dataset.c === state.category));
   $("evBtn").classList.toggle("on", state.evOnly);
-  $("locName").textContent = state.loc ? "📍 " + state.loc.label : "";
+  $("locName").textContent = state.loc ? "📍 " + (state.loc.label === "GPS" ? t("useGps").replace("📍 ", "") : distLabel(state.loc.label)) : "";
   if (state.loc && state.loc.label !== "GPS") $("districtSel").value = state.loc.label;
 
   // ఫిల్టర్ + దూరం
@@ -136,7 +136,7 @@ function render() {
     if (state.minPrice && v.price < state.minPrice) return false;
     if (state.maxPrice && v.price > state.maxPrice) return false;
     if (state.q) {
-      const hay = `${v.brand} ${v.model} ${v.place} ${v.district} ${catLabel(v.category)} ${fuelLabel(v.fuel)}`.toLowerCase();
+      const hay = `${v.brand} ${v.model} ${v.place} ${v.district} ${distName(v.district)} ${catLabel(v.category)} ${fuelLabel(v.fuel)}`.toLowerCase();
       if (!state.q.split(/\s+/).every(w => hay.includes(w))) return false;
     }
     return true;

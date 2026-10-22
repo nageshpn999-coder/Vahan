@@ -1,6 +1,6 @@
 // అన్ని పేజీలు వాడే కామన్ కోడ్: Firebase, భాష, హెల్పర్స్
 import { firebaseConfig, site, DEMO } from "./config.js";
-import { CATEGORIES, FUELS } from "./data.js";
+import { CATEGORIES, FUELS, DISTRICTS } from "./data.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut
@@ -90,6 +90,17 @@ export function applyI18n(root = document) {
 export const catLabel = (id) => { const c = CATEGORIES.find(x => x.id === id); return c ? c[getLang()] : id; };
 export const catIcon = (id) => (CATEGORIES.find(x => x.id === id) || {}).icon || "🚘";
 export const fuelLabel = (id) => { const f = FUELS.find(x => x.id === id); return f ? f[getLang()] : id; };
+// జిల్లా పేరు: డేటాలో English గా సేవ్ అవుతుంది, చూపించేటప్పుడు తెలుగులో "నారాయణపేట జిల్లా"
+export function distName(en) {
+  const d = DISTRICTS.find(x => x[0] === en);
+  if (!d) return en || "";
+  return getLang() === "te" ? d[3] : d[0];
+}
+export function distLabel(en) {
+  if (!en) return "";
+  return getLang() === "te" ? `${distName(en)} జిల్లా` : `${distName(en)} district`;
+}
+export const placeLabel = (v) => [v.place, distName(v.district)].filter(Boolean).join(", ");
 
 // ---------- ఫార్మాట్ హెల్పర్స్ ----------
 export function fmtPrice(n) {
@@ -181,7 +192,7 @@ export function cardHTML(v, distKm) {
       <div class="price">${fmtPrice(v.price)}</div>
       <div class="name">${esc(title(v))}</div>
       <div class="meta">${esc(v.year || "")} · ${fmtKm(v.kmDriven)} · ${esc(fuelLabel(v.fuel))}${ev && v.ev?.batteryHealth ? ` · 🔋${esc(v.ev.batteryHealth)}%` : ""}</div>
-      <div class="loc">📍 ${esc(v.place || v.district || "")}${distKm != null ? ` · ${fmtDist(distKm)}` : ""}</div>
+      <div class="loc">📍 ${esc(v.place || distName(v.district) || "")}${distKm != null ? ` · ${fmtDist(distKm)}` : ""}</div>
     </div>
   </a>`;
 }
