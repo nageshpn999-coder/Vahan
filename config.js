@@ -4,18 +4,18 @@
 
 // 1) Firebase Console → Project settings → Your apps → Web app config
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAIA7fm8jWyrRzURTa1pJf4oRTyI-K5noE",
+  authDomain: "vahan-3e329.firebaseapp.com",
+  projectId: "vahan-3e329",
+  storageBucket: "vahan-3e329.firebasestorage.app",
+  messagingSenderId: "1053616194015",
+  appId: "1:1053616194015:web:5ede78c2d50d007a0fc46a"
 };
 
 // 2) Cloudinary → Settings → Upload → Upload preset (Unsigned)
 export const cloudinary = {
-  cloudName: "YOUR_CLOUD_NAME",
-  uploadPreset: "YOUR_UNSIGNED_PRESET"
+  cloudName: "sxxbuqic",
+  uploadPreset: "bawgoype"
 };
 
 // 3) మీ వివరాలు
