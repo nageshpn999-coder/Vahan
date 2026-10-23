@@ -3,6 +3,7 @@ import {
   DEMO, site, auth, db, fb, t, getLang, applyI18n, renderHeader, esc, fmtPrice, title, timeAgo,
   isFeatured, currentUser, isAdmin, toast, catIcon
 } from "./common.js";
+import { sharePoster } from "./poster.js";
 
 const te = getLang() === "te";
 const $ = (id) => document.getElementById(id);
@@ -59,7 +60,9 @@ function render() {
         <div class="rbtns">
           <a class="btn btn-ghost btn-sm" href="vehicle.html?id=${v.id}">👁</a>
           ${v.status !== "sold" ? `<a class="btn btn-ghost btn-sm" href="sell.html?id=${v.id}">✎ ${te ? "ఎడిట్" : "Edit"}</a>` : ""}
+          ${v.status === "approved" ? `<button class="btn btn-wa btn-sm" data-a="poster" data-id="${v.id}">📲 ${te ? "పోస్టర్" : "Poster"}</button>` : ""}
           ${v.status === "approved" ? `<button class="btn btn-ghost btn-sm" data-a="sold" data-id="${v.id}">✓ ${te ? "అమ్ముడైంది" : "Mark sold"}</button>` : ""}
+          ${["approved", "sold"].includes(v.status) ? `<a class="btn btn-ghost btn-sm" href="agreement.html?id=${v.id}">📄 ${te ? "ఒప్పందం" : "Agreement"}</a>` : ""}
           ${canRenew || st === "expired" ? `<button class="btn btn-ghost btn-sm" data-a="renew" data-id="${v.id}">↻ ${te ? "రెన్యూ" : "Renew"}</button>` : ""}
           ${v.status === "approved" && !isFeatured(v) ? `<button class="btn btn-sell btn-sm" data-a="boost" data-id="${v.id}">★ ${te ? "బూస్ట్" : "Boost"} ₹${site.boostPrices[v.category] || 99}</button>` : ""}
           <button class="btn btn-ghost btn-sm" data-a="del" data-id="${v.id}" style="color:var(--danger)">🗑</button>
@@ -72,6 +75,10 @@ function render() {
 $("list").onclick = async (e) => {
   const b = e.target.closest("[data-a]"); if (!b) return;
   const v = items.find(x => x.id === b.dataset.id); if (!v) return;
+  if (b.dataset.a === "poster") {
+    const base = location.href.replace(/[^/]*$/, "");
+    return sharePoster(v, `${base}vehicle.html?id=${encodeURIComponent(v.id)}`);
+  }
   const ref = fb.doc(db, "vehicles", v.id);
   try {
     if (b.dataset.a === "sold") {

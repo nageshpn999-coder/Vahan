@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="te">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vahan — వాహన అమ్మకపు ఒప్పందం</title>
+<meta name="description" content="వాహనం అమ్మేటప్పుడు, కొనేటప్పుడు ఉచితంగా అమ్మకపు ఒప్పంద పత్రం తయారు చేసుకోండి — తెలుగు / English.">
+<meta name="theme-color" content="#14213d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Guntur:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header id="header"></header>
+<main class="wrap">
+  <section class="form no-print" id="agForm">
+    <h2 id="agTitle"></h2>
+    <p class="note" id="agIntro"></p>
+    <div class="field"><label id="lLang"></label>
+      <div class="pick" id="docLang"><button type="button" data-v="te">తెలుగు</button><button type="button" data-v="en">English</button></div>
+    </div>
+
+    <h3 class="ag-h" id="hSeller"></h3>
+    <div class="two">
+      <div class="field"><label for="sName" data-l="name"></label><input id="sName" maxlength="60"></div>
+      <div class="field"><label for="sFather" data-l="father"></label><input id="sFather" maxlength="60"></div>
+    </div>
+    <div class="field"><label for="sAddr" data-l="addr"></label><input id="sAddr" maxlength="160"></div>
+    <div class="field"><label for="sPhone" data-l="phone"></label><input id="sPhone" type="tel" maxlength="15"></div>
+
+    <h3 class="ag-h" id="hBuyer"></h3>
+    <div class="two">
+      <div class="field"><label for="bName" data-l="name"></label><input id="bName" maxlength="60"></div>
+      <div class="field"><label for="bFather" data-l="father"></label><input id="bFather" maxlength="60"></div>
+    </div>
+    <div class="field"><label for="bAddr" data-l="addr"></label><input id="bAddr" maxlength="160"></div>
+    <div class="field"><label for="bPhone" data-l="phone"></label><input id="bPhone" type="tel" maxlength="15"></div>
+
+    <h3 class="ag-h" id="hVehicle"></h3>
+    <div class="two">
+      <div class="field"><label for="vMake" data-l="make"></label><input id="vMake" maxlength="80"></div>
+      <div class="field"><label for="vYear" data-l="year"></label><input id="vYear" type="number" inputmode="numeric" min="1980" max="2035"></div>
+      <div class="field"><label for="vReg" data-l="reg"></label><input id="vReg" maxlength="20" placeholder="TS 32 AB 1234" style="text-transform:uppercase"></div>
+      <div class="field"><label for="vKm" data-l="km"></label><input id="vKm" type="number" inputmode="numeric" min="0"></div>
+      <div class="field"><label for="vChassis" data-l="chassis"></label><input id="vChassis" maxlength="25" style="text-transform:uppercase"></div>
+      <div class="field"><label for="vEngine" data-l="engine"></label><input id="vEngine" maxlength="25" style="text-transform:uppercase"></div>
+    </div>
+
+    <h3 class="ag-h" id="hDeal"></h3>
+    <div class="two">
+      <div class="field"><label for="price" data-l="price"></label><input id="price" type="number" inputmode="numeric" min="0"><small id="priceW"></small></div>
+      <div class="field"><label for="advance" data-l="advance"></label><input id="advance" type="number" inputmode="numeric" min="0"></div>
+      <div class="field"><label for="payMode" data-l="mode"></label><select id="payMode"></select></div>
+      <div class="field"><label for="rcCost" data-l="rcCost"></label><select id="rcCost"></select></div>
+      <div class="field"><label for="hDate" data-l="hDate"></label><input id="hDate" type="date"></div>
+      <div class="field"><label for="hTime" data-l="hTime"></label><input id="hTime" type="time"></div>
+    </div>
+    <div class="field"><label for="place" data-l="place"></label><input id="place" maxlength="60"></div>
+    <label style="display:flex;gap:8px;align-items:center;margin:4px 0 12px"><input type="checkbox" id="loan"> <span data-l="loan"></span></label>
+
+    <div class="formnav">
+      <a class="btn btn-ghost" href="index.html" data-l="back"></a>
+      <button class="btn" id="printBtn" type="button"></button>
+    </div>
+    <p class="note" id="printHelp" style="margin-top:10px"></p>
+  </section>
+
+  <h3 class="no-print" id="prevH" style="margin:4px 0 8px"></h3>
+  <article class="agdoc" id="doc"></article>
+</main>
+<footer class="no-print">© Vahan</footer>
+<script type="module" src="agreement.js"></script>
+</body>
+</html>

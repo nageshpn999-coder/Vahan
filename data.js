@@ -108,3 +108,35 @@ export const SAMPLE = [
   { id: "d5", category: "auto", brand: "Piaggio", model: "Ape E-City (EV)", year: 2022, kmDriven: 31000, fuel: "electric", owners: 1, price: 145000, negotiable: false, place: "Kosgi", district: "Narayanpet", lat: 16.987, lng: 77.716, photos: [img("auto5")], ownerName: "Shiva", ownerPhone: "+919999999999", description: "రోజూ నడుస్తోంది, పర్మిట్ ఉంది.", ev: { batteryHealth: 82, rangeKm: 80, batteryWarrantyMonths: 0, chargerIncluded: true, chargeTimeHrs: 4 }, createdAt: now - 7 * day, status: "approved", views: 19 },
   { id: "d6", category: "car", brand: "Tata", model: "Nexon EV", year: 2022, kmDriven: 38000, fuel: "electric", owners: 1, transmission: "automatic", price: 985000, negotiable: true, place: "Kukatpally", district: "Medchal-Malkajgiri", lat: 17.494, lng: 78.399, photos: [img("ev6")], ownerName: "Anil", ownerPhone: "+919999999999", description: "బ్యాటరీ వారంటీ 2030 వరకు.", ev: { batteryHealth: 91, rangeKm: 280, batteryWarrantyMonths: 44, chargerIncluded: true, chargeTimeHrs: 8 }, createdAt: now - 4 * day, status: "approved", views: 120 }
 ];
+
+// ---------- తెలుగు వాయిస్ / సెర్చ్ నిఘంటువు ----------
+// "cat:" = వాహన రకం, "ev" = ఎలక్ట్రిక్, మిగతావి వాహనాల్లో వెతికే ఇంగ్లీష్ పదాలు
+export const VOICE_MAP = {
+  // రకాలు
+  "బైక్": "cat:bike", "బైకు": "cat:bike", "మోటార్": "cat:bike", "మోటర్": "cat:bike", "bike": "cat:bike", "bikes": "cat:bike", "motorcycle": "cat:bike",
+  "స్కూటర్": "cat:scooter", "స్కూటీ": "cat:scooter", "స్కూటరు": "cat:scooter", "scooter": "cat:scooter", "scooty": "cat:scooter",
+  "కార్": "cat:car", "కారు": "cat:car", "car": "cat:car", "cars": "cat:car",
+  "ఆటో": "cat:auto", "auto": "cat:auto", "rickshaw": "cat:auto",
+  "ట్రాక్టర్": "cat:tractor", "ట్రాక్టరు": "cat:tractor", "tractor": "cat:tractor",
+  "లారీ": "cat:commercial", "ట్రక్": "cat:commercial", "ట్రక్కు": "cat:commercial", "వ్యాన్": "cat:commercial", "డీసీఎం": "cat:commercial", "truck": "cat:commercial", "lorry": "cat:commercial", "van": "cat:commercial",
+  "ఎలక్ట్రిక్": "ev", "ఈవీ": "ev", "electric": "ev", "ev": "ev",
+  // కంపెనీలు
+  "హీరో": "hero", "హోండా": "honda", "బజాజ్": "bajaj", "టీవీఎస్": "tvs", "టివిఎస్": "tvs", "రాయల్": "royal", "ఎన్‌ఫీల్డ్": "enfield", "ఎన్ఫీల్డ్": "enfield",
+  "బుల్లెట్": "bullet", "యమహా": "yamaha", "సుజుకి": "suzuki", "కేటీఎం": "ktm", "ఏథర్": "ather", "ఓలా": "ola", "రివోల్ట్": "revolt",
+  "మారుతి": "maruti", "హ్యుందాయ్": "hyundai", "హుండాయ్": "hyundai", "టాటా": "tata", "మహీంద్రా": "mahindra", "మహేంద్ర": "mahindra", "టొయోటా": "toyota", "టయోటా": "toyota",
+  "కియా": "kia", "రెనాల్ట్": "renault", "స్వరాజ్": "swaraj", "సోనాలికా": "sonalika", "జాన్": "john", "డీర్": "deere", "ఐషర్": "eicher", "మాస్సీ": "massey",
+  "పియాజియో": "piaggio", "అశోక్": "ashok", "లేలాండ్": "leyland", "కుబోటా": "kubota",
+  // మోడల్స్
+  "స్ప్లెండర్": "splendor", "స్ప్లెండరు": "splendor", "ప్యాషన్": "passion", "గ్లామర్": "glamour", "షైన్": "shine", "యూనికార్న్": "unicorn", "ప్లాటినా": "platina",
+  "పల్సర్": "pulsar", "అపాచీ": "apache", "క్లాసిక్": "classic", "హంటర్": "hunter", "యాక్టివా": "activa", "జూపిటర్": "jupiter", "యాక్సెస్": "access", "డెస్టిని": "destini",
+  "చేతక్": "chetak", "స్విఫ్ట్": "swift", "డిజైర్": "dzire", "ఆల్టో": "alto", "వ్యాగనార్": "wagon", "బాలెనో": "baleno", "ఎర్టిగా": "ertiga", "బ్రెజా": "brezza",
+  "క్రెటా": "creta", "వెన్యూ": "venue", "ఇన్నోవా": "innova", "ఫార్చ్యూనర్": "fortuner", "బొలెరో": "bolero", "స్కార్పియో": "scorpio", "థార్": "thar",
+  "నెక్సాన్": "nexon", "పంచ్": "punch", "టియాగో": "tiago", "ఏస్": "ace", "క్విడ్": "kwid",
+  // ఊర్లు (place పేరుతో వెతకడానికి)
+  "మక్తల్": "makthal", "ఉట్కూర్": "utkoor", "కోస్గి": "kosgi", "మద్దూర్": "maddur", "దామరగిద్ద": "damaragidda", "మాగనూర్": "maganoor", "నర్వ": "narva",
+  "కూకట్‌పల్లి": "kukatpally", "కూకట్పల్లి": "kukatpally", "జడ్చర్ల": "jadcherla", "షాద్‌నగర్": "shadnagar", "షాద్నగర్": "shadnagar"
+};
+// అర్థం లేని చిన్న పదాలు (వీటిని వదిలేస్తాం)
+export const STOP_WORDS = new Set(["దగ్గర", "దగ్గరలో", "దగ్గరి", "కావాలి", "ఉన్న", "ఉన్నవి", "ఒక", "సెకండ్", "హ్యాండ్", "అమ్మకానికి", "చూపించు", "చూపించండి", "వెతుకు",
+  "వెతకండి", "రూపాయల", "రూపాయలు", "ధర", "లో", "నాకు", "మంచి", "కి", "జిల్లా", "జిల్లాలో", "వాహనం", "వాహనాలు", "బండి",
+  "near", "in", "a", "the", "for", "sale", "second", "hand", "show", "me", "i", "want", "rs", "rupees", "district", "used", "with"]);

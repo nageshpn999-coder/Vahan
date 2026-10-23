@@ -1,9 +1,10 @@
 // వాహనం వివరాల పేజీ
 import {
   DEMO, db, fb, t, getLang, applyI18n, renderHeader, esc, fmtPrice, fmtKm, fmtDist, timeAgo,
-  catLabel, fuelLabel, title, waLink, haversine, savedLoc, isLive, currentUser, toast, placeLabel
+  catLabel, fuelLabel, title, waLink, haversine, savedLoc, isLive, currentUser, toast, placeLabel, priceVerdict
 } from "./common.js";
 import { SAMPLE } from "./data.js";
+import { sharePoster } from "./poster.js";
 
 renderHeader();
 applyI18n();
@@ -30,6 +31,7 @@ async function load() {
   if (!isLive(v) && !isOwner) return notFound(v.status === "sold" ? (te ? "ఈ వాహనం అమ్ముడైపోయింది." : "This vehicle is sold.") : null);
 
   render(v, isOwner);
+  showVerdict(v);
 
   // వ్యూస్ లెక్క (ఓనర్ కాకపోతే, ఒక సెషన్‌కు ఒకసారి)
   if (!DEMO && !isOwner && isLive(v)) {
@@ -41,6 +43,25 @@ async function load() {
       }
     } catch {}
   }
+}
+
+// సరైన ధర బ్యాడ్జ్: అదే కంపెనీ వాహనాలను తెచ్చి పోల్చడం
+async function showVerdict(v) {
+  let pool = [];
+  try {
+    if (DEMO) pool = SAMPLE;
+    else {
+      const s = await fb.getDocs(fb.query(fb.collection(db, "vehicles"),
+        fb.where("status", "==", "approved"), fb.where("brand", "==", v.brand), fb.limit(100)));
+      pool = s.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+  } catch (e) { console.warn(e); return; }
+  const r = priceVerdict(v, pool);
+  const box = document.getElementById("verdict");
+  if (!r || !box) return;
+  box.className = `verdict v-${r.key}`;
+  box.innerHTML = `<b>${r.label}</b><span>${esc(r.note)}</span>`;
+  box.hidden = false;
 }
 
 function notFound(msg) {
@@ -70,6 +91,7 @@ function render(v, isOwner) {
     <div class="panel">
       <div class="dprice">${fmtPrice(v.price)} <span class="note">${v.negotiable ? t("negotiable") : t("fixed")}</span></div>
       <div class="dtitle">${esc(name)}</div>
+      <div id="verdict" hidden></div>
       <div class="note">📍 ${esc(placeLabel(v))}${dist != null ? " · " + fmtDist(dist) : ""} · ${t("posted")} ${timeAgo(v.createdAt)} · 👁 ${v.views || 0}</div>
       <div class="specs" style="margin-top:12px">
         ${spec("year", v.year)}
@@ -98,7 +120,9 @@ function render(v, isOwner) {
     <div class="panel">
       <h3>${t("seller")}</h3>
       <div>${esc(v.ownerName || "")} ${v.dealer ? `<span class="badge b-approved">✓ ${te ? "డీలర్" : "Dealer"}</span>` : ""}</div>
-      <div class="subactions">
+      <div class="subactions" style="flex-wrap:wrap">
+        <button class="btn btn-wa btn-sm" id="posterBtn">📲 ${te ? "WhatsApp పోస్టర్" : "WhatsApp poster"}</button>
+        <a class="btn btn-ghost btn-sm" href="agreement.html?id=${encodeURIComponent(v.id)}">📄 ${te ? "అమ్మకపు ఒప్పందం" : "Sale agreement"}</a>
         <button class="btn btn-ghost btn-sm" id="shareBtn">🔗 ${t("share")}</button>
         <button class="btn btn-ghost btn-sm" id="reportBtn">⚑ ${t("report")}</button>
         ${isOwner ? `<a class="btn btn-ghost btn-sm" href="sell.html?id=${encodeURIComponent(v.id)}">✎ ${te ? "ఎడిట్" : "Edit"}</a>` : ""}
@@ -128,6 +152,8 @@ function render(v, isOwner) {
     g.addEventListener("touchstart", e => (x0 = e.touches[0].clientX), { passive: true });
     g.addEventListener("touchend", e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) show(i + (dx < 0 ? 1 : -1)); x0 = null; });
   }
+
+  document.getElementById("posterBtn").onclick = () => sharePoster(v, location.href);
 
   document.getElementById("shareBtn").onclick = async () => {
     const data = { title: name, text: `${name} — ${fmtPrice(v.price)} | Vahan`, url: location.href };

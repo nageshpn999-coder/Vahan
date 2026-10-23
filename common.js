@@ -1,6 +1,6 @@
 // అన్ని పేజీలు వాడే కామన్ కోడ్: Firebase, భాష, హెల్పర్స్
 import { firebaseConfig, site, DEMO } from "./config.js";
-import { CATEGORIES, FUELS, DISTRICTS } from "./data.js";
+import { CATEGORIES, FUELS, DISTRICTS, VOICE_MAP, STOP_WORDS } from "./data.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut
@@ -102,6 +102,78 @@ export function distLabel(en) {
 }
 export const placeLabel = (v) => [v.place, distName(v.district)].filter(Boolean).join(", ");
 
+// ---------- సెర్చ్ / వాయిస్ పార్సర్ ----------
+// "మక్తల్ దగ్గర 50 వేల లోపు స్ప్లెండర్ బైక్" →
+//   { category:"bike", maxPrice:50000, terms:["makthal","splendor","bike"], rest:["makthal","splendor"], district:"" }
+const TE = /[ఀ-౿]/;
+const SUFFIXES = ["లోని", "లోపల", "దగ్గర", "లో", "కి", "కు", "ని", "ను"];
+function lookup(tok) {
+  if (VOICE_MAP[tok]) return VOICE_MAP[tok];
+  for (const s of SUFFIXES) if (tok.length > s.length + 1 && tok.endsWith(s)) {
+    const base = tok.slice(0, -s.length);
+    if (VOICE_MAP[base]) return VOICE_MAP[base];
+    const d = DISTRICTS.find(x => x[3] === base); if (d) return "dist:" + d[0];
+  }
+  return null;
+}
+export function parseQuery(text) {
+  const out = { category: "", ev: false, district: "", minPrice: 0, maxPrice: 0, terms: [], rest: [], unknownTe: [] };
+  let s = String(text || "").toLowerCase().replace(/(\d),(?=\d)/g, "$1").replace(/[,।?!₹]|\.(?!\d)/g, " ");
+  // ధర: "50 వేల", "1.5 లక్షల", "50000", "50k", "2 lakh"
+  const re = /(\d+(?:\.\d+)?)\s*(వేల|వేలు|వేయి|వెయ్యి|thousand|k|లక్షల|లక్షలు|లక్ష|lakhs?|l)?(?=\s|$)/g;
+  const pm = [...s.matchAll(re)].find(m => m[2] || Number(m[1]) >= 1000);
+  if (pm) {
+    const unit = pm[2] || "";
+    let amt = Number(pm[1]) * (/లక్ష|lakh|^l$/.test(unit) ? 100000 : unit ? 1000 : 1);
+    if (/(పైన|పైగా|కంటే ఎక్కువ|above|over|more than)/.test(s)) out.minPrice = Math.round(amt);
+    else out.maxPrice = Math.round(amt);
+    s = s.replace(pm[0], " ").replace(/(లోపు|లోపల|కంటే తక్కువ|కంటే|తక్కువ|పైన|పైగా|ఎక్కువ|under|below|within|less than|above|over|more than|upto|up to)/g, " ");
+  }
+  // "జాన్ డీర్" లాంటి రెండు పదాల పేర్లు సరిగ్గా వస్తాయి (రెండూ నిఘంటువులో ఉన్నాయి)
+  for (const tok of s.split(/\s+/).filter(Boolean)) {
+    if (STOP_WORDS.has(tok)) continue;
+    const dist = DISTRICTS.find(d => d[3] === tok || d[0].toLowerCase() === tok);
+    const m = lookup(tok) || (dist ? "dist:" + dist[0] : null);
+    if (m) {
+      if (m.startsWith("cat:")) { out.category = m.slice(4); out.terms.push(m.slice(4)); }
+      else if (m === "ev") { out.ev = true; out.terms.push("electric"); }
+      else if (m.startsWith("dist:")) { out.district = m.slice(5); out.terms.push(m.slice(5).toLowerCase()); }
+      else { out.terms.push(m); out.rest.push(m); }
+    } else if (TE.test(tok)) {
+      out.unknownTe.push(tok);
+    } else if (tok.length > 1 && !/^\d+$/.test(tok)) {
+      out.terms.push(tok); out.rest.push(tok);
+    }
+  }
+  return out;
+}
+// ఒక వాహనంలో వెతికే టెక్స్ట్ (ఇంగ్లీష్ + తెలుగు పేర్లు)
+export function haystack(v) {
+  return `${v.brand} ${v.model} ${v.place} ${v.district} ${distName(v.district)} ${v.category} ${catLabel(v.category)} ${v.fuel} ${fuelLabel(v.fuel)}`.toLowerCase();
+}
+
+// ---------- సరైన ధర బ్యాడ్జ్ ----------
+// అదే రకం + కంపెనీ + మోడల్, సంవత్సరం ±2 ఉన్న వాహనాల మధ్యస్థ (median) ధరతో పోల్చడం.
+// కనీసం 3 పోలిక వాహనాలు ఉంటేనే చూపిస్తాం (లేకపోతే అంచనా తప్పు కావచ్చు).
+const normModel = (s) => String(s || "").toLowerCase().replace(/\(.*?\)/g, "").replace(/[^a-z0-9]/g, "");
+export function priceVerdict(v, pool) {
+  if (!v || !(v.price > 0) || !Array.isArray(pool)) return null;
+  const m = normModel(v.model), b = String(v.brand || "").toLowerCase();
+  const comps = pool.filter(x => x.id !== v.id && x.price > 0 && x.category === v.category &&
+    String(x.brand || "").toLowerCase() === b &&
+    Math.abs((x.year || 0) - (v.year || 0)) <= 2 &&
+    (normModel(x.model) === m || (m.length > 3 && (normModel(x.model).includes(m) || m.includes(normModel(x.model))))));
+  if (comps.length < 3) return null;
+  const ps = comps.map(x => x.price).sort((a, c) => a - c);
+  const mid = ps.length % 2 ? ps[(ps.length - 1) / 2] : (ps[ps.length / 2 - 1] + ps[ps.length / 2]) / 2;
+  const r = v.price / mid, te = getLang() === "te";
+  const note = te ? `ఇలాంటి ${comps.length} వాహనాల సాధారణ ధర ${fmtPrice(mid)} తో పోల్చి` : `Compared with ${comps.length} similar vehicles (typical ${fmtPrice(mid)})`;
+  if (r < 0.6) return { key: "low", label: te ? "🚩 మార్కెట్ కంటే చాలా తక్కువ — జాగ్రత్త" : "🚩 Far below market — be careful", note, mid, n: comps.length };
+  if (r <= 0.92) return { key: "good", label: te ? "✅ మంచి ధర" : "✅ Good price", note, mid, n: comps.length };
+  if (r <= 1.12) return { key: "fair", label: te ? "👍 సరైన ధర" : "👍 Fair price", note, mid, n: comps.length };
+  return { key: "high", label: te ? "⚠️ మార్కెట్ కంటే ఎక్కువ" : "⚠️ Above market", note, mid, n: comps.length };
+}
+
 // ---------- ఫార్మాట్ హెల్పర్స్ ----------
 export function fmtPrice(n) {
   n = Number(n) || 0;
@@ -179,7 +251,7 @@ export function renderHeader(active) {
   applyI18n(h);
 }
 
-export function cardHTML(v, distKm) {
+export function cardHTML(v, distKm, verdict) {
   const ph = (v.photos && v.photos[0]) || "";
   const ev = v.fuel === "electric";
   return `
@@ -189,7 +261,7 @@ export function cardHTML(v, distKm) {
       ${ev ? `<span class="tag tag-ev">⚡ EV</span>` : ""}
     </div>
     <div class="info">
-      <div class="price">${fmtPrice(v.price)}</div>
+      <div class="price">${fmtPrice(v.price)}${verdict && (verdict.key === "good" || verdict.key === "low") ? ` <span class="vtag v-${verdict.key}">${verdict.key === "good" ? (getLang() === "te" ? "మంచి ధర" : "Good price") : "🚩"}</span>` : ""}</div>
       <div class="name">${esc(title(v))}</div>
       <div class="meta">${esc(v.year || "")} · ${fmtKm(v.kmDriven)} · ${esc(fuelLabel(v.fuel))}${ev && v.ev?.batteryHealth ? ` · 🔋${esc(v.ev.batteryHealth)}%` : ""}</div>
       <div class="loc">📍 ${esc(v.place || distName(v.district) || "")}${distKm != null ? ` · ${fmtDist(distKm)}` : ""}</div>
