@@ -25,6 +25,7 @@ export const site = {
   listingDays: 60,                 // ఎన్ని రోజుల తర్వాత లిస్టింగ్ ఎక్స్‌పైర్ అవుతుంది
   maxActivePerUser: 5,             // ఒక్కో యూజర్‌కు ఒకేసారి ఎన్ని లిస్టింగ్‌లు
   maxPhotos: 8,
+  phoneOtp: false,                 // Firebase బిల్లింగ్ (Blaze) వచ్చాక true చేస్తే ఫోన్ OTP లాగిన్ కూడా వస్తుంది
   boostPrices: { bike: 99, scooter: 99, car: 299, auto: 199, tractor: 299, commercial: 299, other: 99 }
 };
 

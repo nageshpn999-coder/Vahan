@@ -8,7 +8,9 @@ import { CATEGORIES, FUELS, BRANDS, DISTRICTS } from "./data.js";
 
 const te = getLang() === "te";
 const L = te ? {
-  login: "మొబైల్ నంబర్‌తో లాగిన్ అవ్వండి", loginNote: "మీ నంబర్‌కు OTP వస్తుంది. కొనేవారు ఇదే నంబర్‌కు కాల్/WhatsApp చేస్తారు.",
+  login: "వాహనం అమ్మడానికి లాగిన్ అవ్వండి", loginNote: "ఒక్క క్లిక్‌తో మీ Google (Gmail) అకౌంట్‌తో లాగిన్ అవ్వండి. పూర్తిగా ఉచితం.",
+  google: "Google తో లాగిన్ అవ్వండి", or: "— లేదా మొబైల్ OTP తో —", phone: "మీ ఫోన్ నంబర్", phoneHint: "కొనేవారు ఈ నంబర్‌కు కాల్ / WhatsApp చేస్తారు. సరైన నంబర్ ఇవ్వండి.",
+  badPhone: "సరైన 10 అంకెల మొబైల్ నంబర్ ఇవ్వండి", popup: "లాగిన్ విండో బ్లాక్ అయింది. బ్రౌజర్‌లో పాప్-అప్ అనుమతించి మళ్లీ ప్రయత్నించండి.",
   sendOtp: "OTP పంపండి", verify: "వెరిఫై చేయండి", newT: "మీ వాహనం అమ్మండి — ఉచితం", editT: "లిస్టింగ్ ఎడిట్ చేయండి",
   cat: "వాహనం రకం", brand: "బ్రాండ్", brandOther: "బ్రాండ్ పేరు", other: "ఇతర", model: "మోడల్", year: "సంవత్సరం",
   km: "నడిచిన కి.మీ.", kmTractor: "ట్రాక్టర్‌కు నడిచిన గంటలు (hours) రాయండి", fuel: "ఇంధనం",
@@ -23,7 +25,9 @@ const L = te ? {
   done: "పోస్ట్ అయింది! అడ్మిన్ చెక్ చేసిన తర్వాత అందరికీ కనిపిస్తుంది.", limit: `మీకు ఇప్పటికే ${site.maxActivePerUser} యాక్టివ్ లిస్టింగ్‌లు ఉన్నాయి. ఎక్కువ కావాలంటే డీలర్ ప్లాన్ కోసం WhatsApp చేయండి.`,
   locOk: "✓ లొకేషన్ సెట్ అయింది", demo: "DEMO మోడ్: Firebase సెటప్ తర్వాత పోస్ట్ సేవ్ అవుతుంది."
 } : {
-  login: "Login with your mobile number", loginNote: "You'll get an OTP. Buyers will call/WhatsApp this number.",
+  login: "Login to sell your vehicle", loginNote: "Sign in with your Google (Gmail) account in one tap. Completely free.",
+  google: "Continue with Google", or: "— or with mobile OTP —", phone: "Your phone number", phoneHint: "Buyers will call / WhatsApp this number. Enter the correct number.",
+  badPhone: "Enter a valid 10-digit mobile number", popup: "Login window was blocked. Allow pop-ups in your browser and try again.",
   sendOtp: "Send OTP", verify: "Verify", newT: "Sell your vehicle — free", editT: "Edit listing",
   cat: "Vehicle type", brand: "Brand", brandOther: "Brand name", other: "Other", model: "Model", year: "Year",
   km: "KM driven", kmTractor: "For tractors, enter hours used", fuel: "Fuel",
@@ -58,7 +62,7 @@ async function init() {
     lblFuel: "fuel", lblEv: "ev", lblEvHealth: "evHealth", lblEvRange: "evRange", lblEvWarranty: "evWarranty",
     lblEvCharge: "evCharge", lblEvCharger: "evCharger", lblOwners: "owners", lblTrans: "trans", lblPhotos: "photos",
     photoHint: "photoHint", lblPrice: "price", lblNego: "nego", lblLoc: "loc", locGps: "gps", lblPlace: "place",
-    lblDesc: "desc", lblName: "name", backBtn: "back"
+    lblDesc: "desc", lblName: "name", backBtn: "back", googleTxt: "google", orTxt: "or", lblPhone: "phone", phoneHint: "phoneHint"
   });
   $("trans").options[0].textContent = t("manual");
   $("trans").options[1].textContent = t("automatic");
@@ -70,9 +74,25 @@ async function init() {
   await startForm();
 }
 
-// ---------- OTP లాగిన్ ----------
+// ---------- లాగిన్: Google (ముఖ్యం) + ఫోన్ OTP (బిల్లింగ్ వచ్చాక) ----------
 function showLogin() {
   $("loginBox").hidden = false;
+  $("googleBtn").onclick = async () => {
+    $("googleBtn").disabled = true;
+    try {
+      const provider = new fb.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      const r = await fb.signInWithPopup(auth, provider);
+      user = r.user; $("loginBox").hidden = true; await startForm();
+    } catch (e) {
+      console.error(e);
+      if (e.code === "auth/popup-blocked") toast(L.popup, 4500);
+      else if (e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request")
+        toast((te ? "లోపం: " : "Error: ") + (e.code || e.message), 4500);
+    } finally { $("googleBtn").disabled = false; }
+  };
+  if (!site.phoneOtp) return;
+  $("phoneLogin").hidden = false;
   const verifier = new fb.RecaptchaVerifier(auth, "recaptcha", { size: "invisible" });
   $("otpBtn").onclick = async () => {
     $("otpBtn").disabled = true;
@@ -143,7 +163,8 @@ function buildForm() {
   $("fileIn").onchange = addFiles;
   $("backBtn").onclick = () => go(step - 1);
   $("nextBtn").onclick = () => (step < 3 ? (validate(step) && go(step + 1)) : submit());
-  try { $("oname").value = localStorage.getItem("vahan_name") || ""; } catch {}
+  try { $("oname").value = localStorage.getItem("vahan_name") || (user && user.displayName) || ""; } catch {}
+  try { $("ophone").value = (user && user.phoneNumber ? user.phoneNumber.replace(/^\+91/, "") : "") || localStorage.getItem("vahan_phone") || ""; } catch {}
 
   if (existing) prefill(existing);
   syncCat(); syncFuel(); renderPhotos(); go(1);
@@ -161,6 +182,7 @@ function prefill(v) {
   if (v.ev) { $("evHealth").value = v.ev.batteryHealth ?? ""; $("evRange").value = v.ev.rangeKm ?? ""; $("evWarranty").value = v.ev.batteryWarrantyMonths ?? ""; $("evCharge").value = v.ev.chargeTimeHrs ?? ""; $("evCharger").checked = !!v.ev.chargerIncluded; }
   $("price").value = v.price; $("price").oninput(); $("nego").checked = !!v.negotiable;
   $("locDist").value = v.district || ""; $("place").value = v.place || ""; $("desc").value = v.description || ""; $("oname").value = v.ownerName || "";
+  $("ophone").value = String(v.ownerPhone || "").replace(/^\+91/, "");
   showLocOk();
 }
 
@@ -216,6 +238,7 @@ function validate(s) {
     if (!(p >= 1000)) miss.push(L.price);
     if (f.lat == null) { toast(L.needLoc); return false; }
     if (!$("oname").value.trim()) miss.push(L.name);
+    if (!/^[6-9]\d{9}$/.test($("ophone").value.replace(/\D/g, ""))) { toast(L.badPhone, 3500); return false; }
   }
   if (miss.length) { toast(L.need + miss.join(", "), 3500); return false; }
   return true;
@@ -275,7 +298,8 @@ async function submit() {
     $("status").textContent = L.saving;
 
     const name = $("oname").value.trim();
-    try { localStorage.setItem("vahan_name", name); } catch {}
+    const phone = "+91" + $("ophone").value.replace(/\D/g, "").slice(-10);
+    try { localStorage.setItem("vahan_name", name); localStorage.setItem("vahan_phone", phone.slice(3)); } catch {}
     const brand = $("brand").value === "__other" ? $("brandOther").value.trim() : $("brand").value;
     const data = {
       category: f.category, brand, model: $("model").value.trim(), year: Number($("year").value),
@@ -287,7 +311,7 @@ async function submit() {
         chargerIncluded: $("evCharger").checked
       } : null,
       price: Number($("price").value), negotiable: $("nego").checked,
-      description: $("desc").value.trim(), ownerName: name,
+      description: $("desc").value.trim(), ownerName: name, ownerPhone: phone,
       photos: urls, lat: f.lat, lng: f.lng, geohash: geofire.geohashForLocation([f.lat, f.lng]),
       place: $("place").value.trim(), district: f.district || "",
       status: "pending", updatedAt: Date.now()
@@ -299,7 +323,7 @@ async function submit() {
     } else {
       const now = Date.now();
       Object.assign(data, {
-        ownerUid: user.uid, ownerPhone: user.phoneNumber, createdAt: now,
+        ownerUid: user.uid, createdAt: now,
         expiresAt: now + site.listingDays * 86400000, views: 0
       });
       await fb.addDoc(fb.collection(db, "vehicles"), data);

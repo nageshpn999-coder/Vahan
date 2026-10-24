@@ -3,7 +3,8 @@ import { firebaseConfig, site, DEMO } from "./config.js";
 import { CATEGORIES, FUELS, DISTRICTS, VOICE_MAP, STOP_WORDS } from "./data.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getAuth, onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut
+  getAuth, onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut,
+  GoogleAuthProvider, signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
@@ -19,7 +20,7 @@ if (!DEMO) {
   db = getFirestore(app);
 }
 export const fb = {
-  onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut,
+  onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut, GoogleAuthProvider, signInWithPopup,
   collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
   query, where, orderBy, startAt, endAt, limit, increment
 };
