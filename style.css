@@ -217,3 +217,5 @@ nav>a:not(.btn){font-size:15px;opacity:.9}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 footer{text-align:center;color:var(--muted);font-size:13px;padding:24px 16px 40px}
 #recaptcha{margin-top:8px}
+
+.fee-hint{margin-top:8px;padding:8px 12px;border-radius:8px;background:#fff7e6;border:1px solid #fcd34d;color:#7c4a03;font-size:.95rem}

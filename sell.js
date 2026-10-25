@@ -9,10 +9,10 @@ import { CATEGORIES, FUELS, BRANDS, DISTRICTS } from "./data.js";
 
 const te = getLang() === "te";
 const L = te ? {
-  login: "వాహనం అమ్మడానికి లాగిన్ అవ్వండి", loginNote: "ఒక్క క్లిక్‌తో మీ Google (Gmail) అకౌంట్‌తో లాగిన్ అవ్వండి. పూర్తిగా ఉచితం.",
+  login: "వాహనం అమ్మడానికి లాగిన్ అవ్వండి", loginNote: "ఒక్క క్లిక్‌తో మీ Google (Gmail) అకౌంట్‌తో లాగిన్ అవ్వండి.",
   google: "Google తో లాగిన్ అవ్వండి", or: "— లేదా మొబైల్ OTP తో —", phone: "మీ ఫోన్ నంబర్", phoneHint: "కొనేవారు ఈ నంబర్‌కు కాల్ / WhatsApp చేస్తారు. సరైన నంబర్ ఇవ్వండి.",
   badPhone: "సరైన 10 అంకెల మొబైల్ నంబర్ ఇవ్వండి", popup: "లాగిన్ విండో బ్లాక్ అయింది. బ్రౌజర్‌లో పాప్-అప్ అనుమతించి మళ్లీ ప్రయత్నించండి.",
-  sendOtp: "OTP పంపండి", verify: "వెరిఫై చేయండి", newT: "మీ వాహనం అమ్మండి — ఉచితం", editT: "లిస్టింగ్ ఎడిట్ చేయండి",
+  sendOtp: "OTP పంపండి", verify: "వెరిఫై చేయండి", newT: "మీ వాహనం అమ్మండి", editT: "లిస్టింగ్ ఎడిట్ చేయండి",
   cat: "వాహనం రకం", brand: "బ్రాండ్", brandOther: "బ్రాండ్ పేరు", other: "ఇతర", model: "మోడల్", year: "సంవత్సరం",
   km: "నడిచిన కి.మీ.", kmTractor: "ట్రాక్టర్‌కు నడిచిన గంటలు (hours) రాయండి", fuel: "ఇంధనం",
   ev: "⚡ ఎలక్ట్రిక్ వాహన వివరాలు (కొనేవారికి చాలా ముఖ్యం)", evHealth: "బ్యాటరీ హెల్త్ %", evRange: "రేంజ్ (కి.మీ.)",
@@ -26,10 +26,10 @@ const L = te ? {
   done: "పోస్ట్ అయింది! అడ్మిన్ చెక్ చేసిన తర్వాత అందరికీ కనిపిస్తుంది.", limit: `మీకు ఇప్పటికే ${site.maxActivePerUser} యాక్టివ్ లిస్టింగ్‌లు ఉన్నాయి. ఎక్కువ కావాలంటే డీలర్ ప్లాన్ కోసం WhatsApp చేయండి.`,
   locOk: "✓ లొకేషన్ సెట్ అయింది", demo: "DEMO మోడ్: Firebase సెటప్ తర్వాత పోస్ట్ సేవ్ అవుతుంది."
 } : {
-  login: "Login to sell your vehicle", loginNote: "Sign in with your Google (Gmail) account in one tap. Completely free.",
+  login: "Login to sell your vehicle", loginNote: "Sign in with your Google (Gmail) account in one tap.",
   google: "Continue with Google", or: "— or with mobile OTP —", phone: "Your phone number", phoneHint: "Buyers will call / WhatsApp this number. Enter the correct number.",
   badPhone: "Enter a valid 10-digit mobile number", popup: "Login window was blocked. Allow pop-ups in your browser and try again.",
-  sendOtp: "Send OTP", verify: "Verify", newT: "Sell your vehicle — free", editT: "Edit listing",
+  sendOtp: "Send OTP", verify: "Verify", newT: "Sell your vehicle", editT: "Edit listing",
   cat: "Vehicle type", brand: "Brand", brandOther: "Brand name", other: "Other", model: "Model", year: "Year",
   km: "KM driven", kmTractor: "For tractors, enter hours used", fuel: "Fuel",
   ev: "⚡ Electric vehicle details (very important to buyers)", evHealth: "Battery health %", evRange: "Range (km)",
@@ -209,7 +209,17 @@ function syncCat() {
   else if (!brands.length) $("brand").value = "__other";
   $("transF").hidden = f.category !== "car";
   $("kmHint").textContent = f.category === "tractor" ? L.kmTractor : "";
+  showFeeHint();
   syncBrand();
+}
+// వాహనం రకం ఎంచుకోగానే పోస్ట్ ఫీజు చూపించు (ముందే తెలిస్తే నమ్మకం)
+function showFeeHint() {
+  const el = $("feeHint"); if (!el) return;
+  const fee = (!editId && site.payment && site.payment.enabled && f.category) ? listingFee(f.category) : 0;
+  el.hidden = !fee;
+  if (fee) el.innerHTML = te
+    ? `💰 పోస్ట్ ఫీజు: <b>₹${fee}</b> — ${site.listingDays} రోజులు అందరికీ కనిపిస్తుంది`
+    : `💰 Posting fee: <b>₹${fee}</b> — visible to everyone for ${site.listingDays} days`;
 }
 function syncBrand() {
   const other = $("brand").value === "__other";
