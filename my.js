@@ -1,7 +1,7 @@
 // నా వాహనాలు: ఎడిట్, అమ్ముడైంది, రెన్యూ, బూస్ట్, డిలీట్
 import {
   DEMO, site, auth, db, fb, t, getLang, applyI18n, renderHeader, esc, fmtPrice, title, timeAgo,
-  isFeatured, currentUser, isAdmin, toast, catIcon
+  isFeatured, currentUser, isAdmin, toast, catIcon, needsPayment
 } from "./common.js";
 import { sharePoster } from "./poster.js";
 
@@ -53,13 +53,14 @@ function render() {
     <div class="row">
       ${v.photos?.[0] ? `<img src="${esc(v.photos[0])}" alt="">` : `<span class="noimg-s">${catIcon(v.category)}</span>`}
       <div class="rinfo">
-        <b>${fmtPrice(v.price)}</b> <span class="badge b-${st}">${ST[st]}</span>${isFeatured(v) ? `<span class="badge" style="background:#fef3c7">★ ${t("featured")}</span>` : ""}
+        <b>${fmtPrice(v.price)}</b> <span class="badge b-${st}">${ST[st]}</span>${payTag(v)}${isFeatured(v) ? `<span class="badge" style="background:#fef3c7">★ ${t("featured")}</span>` : ""}
         <div class="name">${esc(title(v))} · ${esc(v.year)}</div>
         <div class="meta">👁 ${v.views || 0} · ${timeAgo(v.createdAt)}${daysLeft != null && st !== "sold" && st !== "rejected" ? ` · ${daysLeft > 0 ? (te ? `${daysLeft} రోజులు మిగిలాయి` : `${daysLeft} days left`) : ""}` : ""}</div>
         ${v.status === "rejected" && v.rejectReason ? `<div class="meta err">${esc(v.rejectReason)}</div>` : ""}
         <div class="rbtns">
           <a class="btn btn-ghost btn-sm" href="vehicle.html?id=${v.id}">👁</a>
           ${v.status !== "sold" ? `<a class="btn btn-ghost btn-sm" href="sell.html?id=${v.id}">✎ ${te ? "ఎడిట్" : "Edit"}</a>` : ""}
+          ${needsPayment(v) && v.status !== "rejected" ? `<a class="btn btn-sell btn-sm" href="sell.html?pay=${v.id}">💰 ${te ? "చెల్లించండి" : "Pay"} ₹${v.fee || ""}</a>` : ""}
           ${v.status === "approved" ? `<button class="btn btn-wa btn-sm" data-a="poster" data-id="${v.id}">📲 ${te ? "పోస్టర్" : "Poster"}</button>` : ""}
           ${v.status === "approved" ? `<button class="btn btn-ghost btn-sm" data-a="sold" data-id="${v.id}">✓ ${te ? "అమ్ముడైంది" : "Mark sold"}</button>` : ""}
           ${["approved", "sold"].includes(v.status) ? `<a class="btn btn-ghost btn-sm" href="agreement.html?id=${v.id}">📄 ${te ? "ఒప్పందం" : "Agreement"}</a>` : ""}
@@ -104,3 +105,10 @@ $("list").onclick = async (e) => {
     await load();
   } catch (err) { console.error(err); toast("Error: " + (err.code || err.message)); }
 };
+
+function payTag(v) {
+  if (v.payStatus === "unpaid") return `<span class="paytag p-unpaid">${te ? "చెల్లించలేదు" : "Unpaid"}</span>`;
+  if (v.payStatus === "submitted") return `<span class="paytag p-submitted">${te ? "చెల్లింపు చెక్ అవుతోంది" : "Payment in review"}</span>`;
+  if (v.payStatus === "verified") return `<span class="paytag p-verified">✓ ${te ? "చెల్లించారు" : "Paid"}</span>`;
+  return "";
+}

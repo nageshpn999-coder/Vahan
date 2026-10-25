@@ -37,6 +37,27 @@
     </div>
   </section>
 
+  <!-- చెల్లింపు -->
+  <section class="form paybox" id="payBox" hidden>
+    <div class="pay-ok" id="payPosted"></div>
+    <h2 id="payTitle"></h2>
+    <div class="pay-amt"><span id="payAmt"></span><small id="payOffer"></small></div>
+    <p class="note" id="payWhy"></p>
+    <a class="btn btn-block btn-pay" id="payUpi" href="#"></a>
+    <div class="pay-qr-wrap">
+      <div id="payQr" class="pay-qr"></div>
+      <div class="note" id="payQrNote"></div>
+      <div class="pay-id"><code id="payUpiId"></code> <button class="btn btn-ghost btn-sm" id="payCopy" type="button"></button></div>
+    </div>
+    <div class="field" style="margin-top:16px">
+      <label for="payUtr" id="payUtrLbl"></label>
+      <input id="payUtr" inputmode="numeric" maxlength="30" placeholder="123456789012" autocomplete="off">
+      <small id="payUtrHint"></small>
+    </div>
+    <button class="btn btn-block" id="paySubmit" type="button"></button>
+    <p class="note" id="payLater" style="margin-top:12px;text-align:center"></p>
+  </section>
+
   <!-- ఫారం -->
   <section class="form" id="sellBox" hidden>
     <h2 id="formTitle"></h2>
@@ -107,6 +128,7 @@
   </section>
 </main>
 <footer>© Vahan</footer>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script type="module" src="sell.js"></script>
 </body>
 </html>

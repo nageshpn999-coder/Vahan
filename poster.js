@@ -62,37 +62,41 @@ export async function makePoster(v) {
   const te = getLang() === "te";
   try { await Promise.all([document.fonts.load(`800 80px ${FONT}`), document.fonts.load(`500 40px ${FONT}`)]); } catch {}
   const { key, c } = posterTheme(v);
+  const accent = c[0];
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
 
-  // 1) రంగుల గ్రేడియంట్ నేపథ్యం + అలంకార వృత్తాలు
-  const bg = ctx.createLinearGradient(0, 0, W * 0.4, H);
-  bg.addColorStop(0, c[0]); bg.addColorStop(1, c[1]);
+  // 1) ముదురు, సాఫ్ట్ నేపథ్యం (వాహనం ఫోటో ప్రధానంగా కనిపించడానికి) + కొంచెం రంగు
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#151b2b"); bg.addColorStop(1, "#0b0f1a");
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = "rgba(255,255,255,.10)";
-  ctx.beginPath(); ctx.arc(W - 60, 120, 260, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(80, H - 330, 200, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "rgba(255,255,255,.06)";
-  ctx.beginPath(); ctx.arc(W * 0.55, H * 0.62, 420, 0, Math.PI * 2); ctx.fill();
+  // ఫోటో వెనుక రంగు కాంతి (glow)
+  const glow = ctx.createRadialGradient(W / 2, 520, 80, W / 2, 520, 720);
+  glow.addColorStop(0, hexA(accent, 0.38)); glow.addColorStop(1, hexA(accent, 0));
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+  // పైన సన్నని రంగు గీత
+  const strip = ctx.createLinearGradient(0, 0, W, 0);
+  strip.addColorStop(0, c[0]); strip.addColorStop(1, c[1]);
+  ctx.fillStyle = strip; ctx.fillRect(0, 0, W, 10);
 
-  // 2) పైన లోగో + వాహన రకం
-  ctx.fillStyle = "#fff"; rr(ctx, 56, 44, 88, 88, 22); ctx.fill();
-  ctx.fillStyle = c[1]; ctx.font = `800 62px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.fillText("V", 100, 92);
-  ctx.textAlign = "left"; ctx.fillStyle = "#fff"; ctx.font = `800 56px ${FONT}`;
-  ctx.fillText(site.name, 162, 92);
-  ctx.font = `700 34px ${FONT}`;
+  // 2) లోగో + వాహన రకం
+  ctx.fillStyle = "#ffffff"; rr(ctx, 48, 40, 76, 76, 20); ctx.fill();
+  ctx.fillStyle = "#151b2b"; ctx.font = `800 54px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText("V", 86, 80);
+  ctx.textAlign = "left"; ctx.fillStyle = "#fff"; ctx.font = `800 50px ${FONT}`;
+  ctx.fillText(site.name, 140, 80);
+  ctx.font = `700 32px ${FONT}`;
   const tag = `${catIcon(v.category)} ${catLabel(v.category)}`;
-  const tw = ctx.measureText(tag).width + 40;
-  chip(ctx, W - 56 - tw, 58, tag, "rgba(255,255,255,.22)", "#fff", 34);
+  const tw = ctx.measureText(tag).width + 36;
+  chip(ctx, W - 48 - tw, 52, tag, hexA(accent, 0.22), "#fff", 32);
 
-  // 3) తెల్ల ఫ్రేమ్‌లో ఫోటో
-  const px = 56, py = 160, pw = W - 112, ph = 640;
+  // 3) పెద్ద ఫోటో (హీరో) — రంగు అంచుతో
+  const px = 36, py = 140, pw = W - 72, ph = 760;
   ctx.save();
-  ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 40; ctx.shadowOffsetY = 16;
-  ctx.fillStyle = "#fff"; rr(ctx, px - 12, py - 12, pw + 24, ph + 24, 46); ctx.fill();
+  ctx.shadowColor = hexA(accent, 0.55); ctx.shadowBlur = 50;
+  ctx.fillStyle = strip; rr(ctx, px - 6, py - 6, pw + 12, ph + 12, 40); ctx.fill();
   ctx.restore();
-  ctx.save(); rr(ctx, px, py, pw, ph, 36); ctx.clip();
+  ctx.save(); rr(ctx, px, py, pw, ph, 34); ctx.clip();
   let drew = false;
   if (v.photos && v.photos[0]) {
     try { cover(ctx, await loadImg(sized(v.photos[0], pw, ph)), px, py, pw, ph); drew = true; } catch {}
@@ -100,62 +104,70 @@ export async function makePoster(v) {
   if (!drew) {
     const g2 = ctx.createLinearGradient(px, py, px, py + ph); g2.addColorStop(0, "#eef2f7"); g2.addColorStop(1, "#d9e1ec");
     ctx.fillStyle = g2; ctx.fillRect(px, py, pw, ph);
-    ctx.font = `280px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = `300px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(catIcon(v.category), W / 2, py + ph / 2); ctx.textAlign = "left";
   }
+  // ఫోటో కింద చిన్న నీడ (ధర స్టిక్కర్ స్పష్టంగా కనిపించడానికి)
+  const sh = ctx.createLinearGradient(0, py + ph - 200, 0, py + ph);
+  sh.addColorStop(0, "rgba(0,0,0,0)"); sh.addColorStop(1, "rgba(0,0,0,.55)");
+  ctx.fillStyle = sh; ctx.fillRect(px, py + ph - 200, pw, 200);
   ctx.restore();
   // ఫోటోపై బ్యాడ్జ్‌లు
   let bx = px + 22;
   if (key === "featured") bx += chip(ctx, bx, py + 22, te ? "★ ఫీచర్డ్" : "★ Featured", "#ffd60a", "#3b2a00", 34, 800) + 14;
   if (v.fuel === "electric") chip(ctx, bx, py + 22, "⚡ EV", "#16a34a", "#fff", 34, 800);
 
-  // 4) ధర స్టిక్కర్ (కొంచెం వంగి, ఫోటో అంచుపై)
-  ctx.save();
-  ctx.translate(px + 10, py + ph - 40); ctx.rotate(-0.045);
-  ctx.font = `800 92px ${FONT}`;
+  // 4) ధర స్టిక్కర్ — ఫోటో కింది మూలలో
+  ctx.font = `800 86px ${FONT}`;
   const price = fmtPrice(v.price);
-  const prw = ctx.measureText(price).width + 70;
-  ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 24; ctx.shadowOffsetY = 10;
-  ctx.fillStyle = key === "featured" ? "#ffffff" : "#ffe14d"; rr(ctx, 0, 0, prw, 128, 28); ctx.fill();
+  const prw = ctx.measureText(price).width + 64;
+  ctx.save();
+  ctx.translate(px + 24, py + ph - 150); ctx.rotate(-0.03);
+  ctx.shadowColor = "rgba(0,0,0,.4)"; ctx.shadowBlur = 20; ctx.shadowOffsetY = 8;
+  ctx.fillStyle = "#ffe14d"; rr(ctx, 0, 0, prw, 118, 26); ctx.fill();
   ctx.shadowColor = "transparent";
-  ctx.fillStyle = "#16130a"; ctx.textBaseline = "middle"; ctx.fillText(price, 35, 70);
+  ctx.fillStyle = "#16130a"; ctx.textBaseline = "middle"; ctx.fillText(price, 32, 64);
   ctx.restore();
   if (v.negotiable) {
-    ctx.save(); ctx.translate(px + prw + 34, py + ph + 6); ctx.rotate(-0.045);
-    chip(ctx, 0, 0, te ? "🤝 బేరం ఉంది" : "🤝 Negotiable", "#ffffff", c[1], 30, 800);
+    ctx.save(); ctx.translate(px + prw + 40, py + ph - 108); ctx.rotate(-0.03);
+    chip(ctx, 0, 0, te ? "🤝 బేరం ఉంది" : "🤝 Negotiable", "#ffffff", "#151b2b", 28, 800);
     ctx.restore();
   }
 
   // 5) పేరు
   ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.fillStyle = "#fff";
-  ctx.font = `800 64px ${FONT}`;
-  ctx.shadowColor = "rgba(0,0,0,.25)"; ctx.shadowBlur = 10;
-  ctx.fillText(fit(ctx, `${title(v)}${v.year ? " · " + v.year : ""}`, W - 112), 56, py + ph + 190);
-  ctx.shadowBlur = 0;
+  ctx.font = `800 60px ${FONT}`;
+  ctx.fillText(fit(ctx, `${title(v)}${v.year ? " · " + v.year : ""}`, W - 96), 48, py + ph + 92);
 
-  // 6) వివరాల చిప్స్
+  // 6) వివరాల చిప్స్ (రంగు అంచుతో)
   const chips = [`🛣️ ${fmtKm(v.kmDriven)}`, `⛽ ${fuelLabel(v.fuel)}`];
   if (v.owners) chips.push(`👤 ${v.owners} ${te ? "ఓనర్" : "owner"}`);
   if (v.fuel === "electric" && v.ev?.batteryHealth) chips[1] = `🔋 ${v.ev.batteryHealth}%`;
-  let cx = 56; const cy = py + ph + 222;
+  let cx = 48; const cy = py + ph + 120;
   for (const t of chips) {
-    ctx.font = `700 32px ${FONT}`;
-    if (cx + ctx.measureText(t).width + 40 > W - 56) break;
-    cx += chip(ctx, cx, cy, t, "rgba(255,255,255,.2)", "#fff", 32) + 14;
+    ctx.font = `700 30px ${FONT}`;
+    if (cx + ctx.measureText(t).width + 40 > W - 48) break;
+    cx += chip(ctx, cx, cy, t, hexA(accent, 0.2), "#fff", 30) + 12;
   }
-  // ఊరు
-  ctx.fillStyle = "#fff"; ctx.font = `700 40px ${FONT}`; ctx.textBaseline = "alphabetic";
-  ctx.fillText(fit(ctx, `📍 ${placeLabel(v)}`, W - 112), 56, cy + 122);
+  ctx.fillStyle = "#cbd5e1"; ctx.font = `700 38px ${FONT}`; ctx.textBaseline = "alphabetic";
+  ctx.fillText(fit(ctx, `📍 ${placeLabel(v)}`, W - 96), 48, cy + 108);
 
-  // 7) కింద తెల్ల CTA బార్
-  const by = H - 132;
-  ctx.fillStyle = "#fff"; rr(ctx, 40, by, W - 80, 104, 52); ctx.fill();
-  ctx.fillStyle = c[1]; ctx.textBaseline = "middle"; ctx.font = `800 40px ${FONT}`;
-  ctx.fillText(te ? "👉 Vahan లో చూడండి" : "👉 See it on Vahan", 84, by + 38);
-  ctx.fillStyle = "#475569"; ctx.font = `600 28px ${FONT}`;
-  ctx.fillText(fit(ctx, `${location.host}${location.pathname.replace(/[^/]*$/, "")}`, W - 170), 84, by + 76);
+  // 7) కింద CTA బార్ (వాహన రకం రంగు)
+  const by = H - 118;
+  ctx.fillStyle = strip; rr(ctx, 36, by, W - 72, 92, 46); ctx.fill();
+  const ctaInk = key === "featured" || key === "auto" ? "#1a1300" : "#fff";
+  ctx.fillStyle = ctaInk; ctx.textBaseline = "middle"; ctx.font = `800 38px ${FONT}`;
+  ctx.fillText(te ? "👉 Vahan లో చూడండి" : "👉 See it on Vahan", 76, by + 32);
+  ctx.fillStyle = ctaInk === "#fff" ? "rgba(255,255,255,.85)" : "rgba(26,19,0,.8)"; ctx.font = `600 26px ${FONT}`;
+  ctx.fillText(fit(ctx, `${location.host}${location.pathname.replace(/[^/]*$/, "")}`, W - 160), 76, by + 66);
 
   return new Promise(res => cv.toBlob(res, "image/jpeg", 0.92));
+}
+
+// #rrggbb → rgba(…, a)
+function hexA(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
 }
 
 export async function sharePoster(v, link) {

@@ -195,6 +195,18 @@ export function timeAgo(ms) {
   return te ? `${d} రోజుల క్రితం` : `${d} days ago`;
 }
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// ---------- లిస్టింగ్ ఫీజు (UPI) ----------
+export function listingFee(category) {
+  const p = site.payment;
+  if (!p || !p.enabled) return 0;
+  return p.launchOffer ? p.launchPrice : (p.fees[category] ?? p.fees.other);
+}
+export function upiLink(amount, note) {
+  const p = site.payment;
+  return `upi://pay?pa=${p.upiId}&pn=${encodeURIComponent(p.payeeName)}&am=${Number(amount).toFixed(2)}&cu=INR&tn=${encodeURIComponent(note)}`;
+}
+// చెల్లింపు అవసరమా? (పాత లిస్టింగ్‌లకు payStatus ఉండదు → అవసరం లేదు)
+export const needsPayment = (v) => v.payStatus === "unpaid";
 export const isFeatured = (v) => (v.featuredUntil || 0) > Date.now();
 export const isLive = (v) => v.status === "approved" && (!v.expiresAt || v.expiresAt > Date.now());
 export const title = (v) => `${v.brand || ""} ${v.model || ""}`.trim();

@@ -1,7 +1,8 @@
 // అమ్మే పేజీ: లాగిన్ (OTP) + 3 దశల అప్‌లోడ్ ఫారం + ఎడిట్
 import * as geofire from "https://cdn.jsdelivr.net/npm/geofire-common@6.0.0/+esm";
 import {
-  DEMO, site, auth, db, fb, t, getLang, applyI18n, renderHeader, fmtPrice, currentUser, gps, toast, esc, distLabel
+  DEMO, site, auth, db, fb, t, getLang, applyI18n, renderHeader, fmtPrice, currentUser, gps, toast, esc, distLabel,
+  listingFee, upiLink, title
 } from "./common.js";
 import { cloudinary } from "./config.js";
 import { CATEGORIES, FUELS, BRANDS, DISTRICTS } from "./data.js";
@@ -113,6 +114,12 @@ function showLogin() {
 }
 
 async function startForm() {
+  const payId = new URLSearchParams(location.search).get("pay");
+  if (payId) {
+    const s = await fb.getDoc(fb.doc(db, "vehicles", payId));
+    if (!s.exists() || s.data().ownerUid !== user.uid) { toast(te ? "ఈ లిస్టింగ్ మీది కాదు." : "Not your listing."); return; }
+    return showPay({ id: s.id, ...s.data() }, false);
+  }
   $("sellBox").hidden = false;
   if (editId) {
     const s = await fb.getDoc(fb.doc(db, "vehicles", editId));
@@ -322,11 +329,14 @@ async function submit() {
       toast(te ? "సేవ్ అయింది. మళ్లీ అడ్మిన్ చెక్ చేస్తారు." : "Saved. It will be reviewed again.");
     } else {
       const now = Date.now();
+      const fee = listingFee(data.category);
       Object.assign(data, {
         ownerUid: user.uid, createdAt: now,
-        expiresAt: now + site.listingDays * 86400000, views: 0
+        expiresAt: now + site.listingDays * 86400000, views: 0,
+        fee, payStatus: fee > 0 ? "unpaid" : "free"
       });
-      await fb.addDoc(fb.collection(db, "vehicles"), data);
+      const ref = await fb.addDoc(fb.collection(db, "vehicles"), data);
+      if (fee > 0) return showPay({ id: ref.id, ...data }, true);
       toast(L.done, 4000);
     }
     setTimeout(() => (location.href = "my.html"), 1500);
@@ -336,4 +346,71 @@ async function submit() {
     $("status").className = "err";
     $("nextBtn").disabled = false; $("backBtn").disabled = false;
   }
+}
+
+// ---------- 💰 UPI చెల్లింపు ----------
+const P = te ? {
+  posted: "✅ మీ వాహనం సేవ్ అయింది!", title: "చివరి స్టెప్: లిస్టింగ్ ఫీజు చెల్లించండి",
+  offer: "🎉 లాంచ్ ఆఫర్", why: "చెల్లింపు చెక్ చేసిన తర్వాత మీ వాహనం 60 రోజులు అందరికీ కనిపిస్తుంది. ఫీజు వల్ల నిజమైన అమ్మకందారులు మాత్రమే ఉంటారు — కొనేవారికి నమ్మకం.",
+  upi: "📱 PhonePe / Google Pay / Paytm తో చెల్లించండి", qr: "లేదా వేరే ఫోన్‌తో ఈ QR స్కాన్ చేయండి / ఈ UPI ID కి పంపండి:",
+  copy: "కాపీ", copied: "UPI ID కాపీ అయింది", utr: "చెల్లించాక UTR / Transaction ID ఇక్కడ పెట్టండి",
+  utrHint: "PhonePe / GPay లో పేమెంట్ వివరాల్లో 12 అంకెల UTR నంబర్ ఉంటుంది.", submit: "✓ చెల్లించాను — సబ్మిట్ చేయండి",
+  later: "తర్వాత చెల్లిస్తారా? \"నా వాహనాలు\" పేజీలో \"💰 చెల్లించండి\" బటన్ ఉంటుంది.",
+  badUtr: "సరైన UTR / Transaction ID ఇవ్వండి (కనీసం 10 అక్షరాలు/అంకెలు)",
+  thanks: "ధన్యవాదాలు! చెల్లింపు చెక్ చేసి త్వరలో మీ వాహనం లైవ్ చేస్తాం.", already: "ఈ లిస్టింగ్‌కు చెల్లింపు ఇప్పటికే అందింది ✓"
+} : {
+  posted: "✅ Your vehicle is saved!", title: "Last step: pay the listing fee",
+  offer: "🎉 Launch offer", why: "After we verify the payment, your vehicle is visible to everyone for 60 days. The fee keeps only genuine sellers — buyers trust it more.",
+  upi: "📱 Pay with PhonePe / Google Pay / Paytm", qr: "Or scan this QR from another phone / send to this UPI ID:",
+  copy: "Copy", copied: "UPI ID copied", utr: "After paying, enter the UTR / Transaction ID",
+  utrHint: "The 12-digit UTR is in the payment details in PhonePe / GPay.", submit: "✓ I have paid — submit",
+  later: "Pay later? Use the \"💰 Pay\" button on the My vehicles page.",
+  badUtr: "Enter a valid UTR / Transaction ID (at least 10 letters/digits)",
+  thanks: "Thank you! We'll verify the payment and make your vehicle live soon.", already: "Payment for this listing is already received ✓"
+};
+
+function showPay(v, justPosted) {
+  document.getElementById("sellBox").hidden = true;
+  $("loginBox").hidden = true;
+  const box = $("payBox"); box.hidden = false;
+  window.scrollTo({ top: 0 });
+  if (v.payStatus === "submitted" || v.payStatus === "verified" || v.payStatus === "free" || !v.payStatus) {
+    box.innerHTML = `<div class="pay-ok">${P.already}</div><a class="btn" href="my.html">${t("my")}</a>`;
+    return;
+  }
+  const fee = v.fee || listingFee(v.category);
+  const short = v.id.slice(0, 6).toUpperCase();
+  const note = `Vahan ${short} ${title(v)}`.slice(0, 40);
+  $("payPosted").textContent = justPosted ? P.posted : "";
+  $("payTitle").textContent = P.title;
+  $("payAmt").textContent = fmtPrice(fee);
+  const pay = site.payment;
+  const full = pay.fees[v.category] ?? pay.fees.other;
+  $("payOffer").textContent = pay.launchOffer && full > fee ? `${P.offer} · ₹${full} → ₹${fee}` : "";
+  $("payWhy").textContent = P.why;
+  const link = upiLink(fee, note);
+  $("payUpi").textContent = P.upi; $("payUpi").href = link;
+  $("payQrNote").textContent = P.qr;
+  $("payUpiId").textContent = pay.upiId;
+  $("payCopy").textContent = P.copy;
+  $("payCopy").onclick = async () => { try { await navigator.clipboard.writeText(pay.upiId); toast(P.copied); } catch {} };
+  try {
+    const qr = window.qrcode(0, "M"); qr.addData(link); qr.make();
+    $("payQr").innerHTML = qr.createImgTag(6, 8);
+  } catch { $("payQr").hidden = true; }
+  $("payUtrLbl").textContent = P.utr; $("payUtrHint").textContent = P.utrHint;
+  $("paySubmit").textContent = P.submit; $("payLater").textContent = P.later;
+  $("paySubmit").onclick = async () => {
+    const utr = $("payUtr").value.replace(/\s/g, "");
+    if (!/^[A-Za-z0-9]{10,30}$/.test(utr)) { toast(P.badUtr, 3500); return; }
+    $("paySubmit").disabled = true;
+    try {
+      await fb.updateDoc(fb.doc(db, "vehicles", v.id), { payUtr: utr, payStatus: "submitted", paidAt: Date.now() });
+      toast(P.thanks, 4500);
+      setTimeout(() => (location.href = "my.html"), 1800);
+    } catch (e) {
+      console.error(e); toast((te ? "లోపం: " : "Error: ") + (e.code || e.message), 4500);
+      $("paySubmit").disabled = false;
+    }
+  };
 }

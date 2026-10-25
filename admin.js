@@ -72,7 +72,7 @@ function render() {
     <div class="row">
       ${v.photos?.[0] ? `<a href="vehicle.html?id=${v.id}" target="_blank"><img src="${esc(v.photos[0])}" alt=""></a>` : `<span class="noimg-s">${catIcon(v.category)}</span>`}
       <div class="rinfo">
-        <b>${fmtPrice(v.price)}</b> · ${esc(title(v))} · ${esc(v.year)}
+        <b>${fmtPrice(v.price)}</b> · ${esc(title(v))} · ${esc(v.year)} ${payInfo(v)}
         ${isFeatured(v) ? `<span class="badge" style="background:#fef3c7">★</span>` : ""}${v.dealer ? `<span class="badge b-approved">Dealer</span>` : ""}
         <div class="meta">${esc(catLabel(v.category))} · ${esc(fuelLabel(v.fuel))} · ${(v.kmDriven || 0).toLocaleString("en-IN")} km · ${v.photos?.length || 0} 📷</div>
         <div class="meta">📍 ${esc(v.place || "")}, ${esc(v.district || "")} · 👤 ${esc(v.ownerName)} <a href="tel:${esc(v.ownerPhone)}">${esc(v.ownerPhone)}</a> · ${timeAgo(v.createdAt)}</div>
@@ -98,7 +98,10 @@ $("list").onclick = async (e) => {
   const now = Date.now();
   b.disabled = true;
   try {
-    if (a === "approve") await fb.updateDoc(ref, { status: "approved", approvedAt: now, updatedAt: now, rejectReason: null, expiresAt: Math.max(v?.expiresAt || 0, now + site.listingDays * 86400000) });
+    if (a === "approve" && v && v.payStatus === "unpaid" &&
+        !confirm(te ? "ఈ వాహనానికి చెల్లింపు రాలేదు. అయినా ఉచితంగా అప్రూవ్ చేయాలా?" : "No payment received for this vehicle. Approve for free anyway?")) { b.disabled = false; return; }
+    if (a === "approve") await fb.updateDoc(ref, {
+      ...(v && (v.payStatus === "submitted" || v.payStatus === "unpaid") ? { payStatus: v.payStatus === "submitted" ? "verified" : "waived", payVerifiedAt: now } : {}), status: "approved", approvedAt: now, updatedAt: now, rejectReason: null, expiresAt: Math.max(v?.expiresAt || 0, now + site.listingDays * 86400000) });
     else if (a === "reject") {
       const reason = prompt(te ? "కారణం (యూజర్‌కు కనిపిస్తుంది):" : "Reason (shown to user):", te ? "ఫోటోలు స్పష్టంగా లేవు" : "Photos not clear");
       if (reason === null) { b.disabled = false; return; }
@@ -117,3 +120,14 @@ $("list").onclick = async (e) => {
     await load();
   } catch (err) { console.error(err); toast("Error: " + (err.code || err.message)); b.disabled = false; }
 };
+
+// చెల్లింపు వివరాలు: మీ బ్యాంక్ / PhonePe లో ఈ UTR, మొత్తం సరిపోలితేనే అప్రూవ్ చేయండి
+function payInfo(v) {
+  if (!v.payStatus) return "";
+  if (v.payStatus === "unpaid") return `<span class="paytag p-unpaid">💰 ${te ? "చెల్లించలేదు" : "Unpaid"} ₹${v.fee || ""}</span>`;
+  if (v.payStatus === "submitted") return `<span class="paytag p-submitted">💰 ₹${v.fee || ""} · UTR: ${esc(v.payUtr || "")}</span>`;
+  if (v.payStatus === "verified") return `<span class="paytag p-verified">✓ ₹${v.fee || ""}</span>`;
+  if (v.payStatus === "free" && site.payment && site.payment.enabled) return `<span class="paytag p-unpaid">⚠️ ${te ? "ఫీజు లేకుండా పోస్ట్" : "Posted without fee"}</span>`;
+  if (v.payStatus === "waived") return `<span class="paytag p-verified">${te ? "ఉచితం" : "Free"}</span>`;
+  return "";
+}
