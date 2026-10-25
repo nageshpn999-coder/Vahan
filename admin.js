@@ -1,4 +1,4 @@
-// అడ్మిన్ ప్యానెల్: అప్రూవ్/రిజెక్ట్, ఫీచర్డ్, డీలర్, రిపోర్ట్‌లు
+// అడ్మిన్ ప్యానెల్: అప్రూవ్/రిజెక్ట్, ఫీచర్డ్, డీలర్, ఫిర్యాదులు
 import {
   DEMO, site, db, fb, getLang, applyI18n, renderHeader, esc, fmtPrice, title, timeAgo,
   isFeatured, currentUser, isAdmin, toast, catLabel, fuelLabel, catIcon
@@ -10,7 +10,7 @@ renderHeader();
 applyI18n();
 
 const TABS = te
-  ? [["pending", "చెక్ చేయాల్సినవి"], ["approved", "లైవ్"], ["reports", "రిపోర్ట్‌లు"], ["other", "అమ్ముడైనవి/తిరస్కరించినవి"]]
+  ? [["pending", "చెక్ చేయాల్సినవి"], ["approved", "లైవ్"], ["reports", "ఫిర్యాదులు"], ["other", "అమ్ముడైనవి/తిరస్కరించినవి"]]
   : [["pending", "To review"], ["approved", "Live"], ["reports", "Reports"], ["other", "Sold/Rejected"]];
 let tab = "pending", data = { pending: [], approved: [], reports: [], other: [] };
 
@@ -112,7 +112,7 @@ $("list").onclick = async (e) => {
     else if (a === "del") { if (!confirm(te ? "శాశ్వతంగా తొలగించాలా?" : "Delete permanently?")) { b.disabled = false; return; } await fb.deleteDoc(ref); }
     else if (a === "takedown") {
       if (!confirm(te ? "ఈ వాహనాన్ని తిరస్కరించాలా?" : "Reject this vehicle?")) { b.disabled = false; return; }
-      await fb.updateDoc(ref, { status: "rejected", rejectReason: te ? "రిపోర్ట్ ఆధారంగా తీసేశాం" : "Removed after report", updatedAt: now });
+      await fb.updateDoc(ref, { status: "rejected", rejectReason: te ? "ఫిర్యాదు ఆధారంగా తీసేశాం" : "Removed after report", updatedAt: now });
       await fb.updateDoc(fb.doc(db, "reports", b.dataset.r), { status: "resolved" });
     }
     else if (a === "resolve") await fb.updateDoc(fb.doc(db, "reports", b.dataset.r), { status: "resolved" });

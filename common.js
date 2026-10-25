@@ -45,7 +45,7 @@ const DICT = {
     batteryHealth: "బ్యాటరీ హెల్త్", range: "రేంజ్ (ఫుల్ ఛార్జ్)", batteryWarranty: "బ్యాటరీ వారంటీ మిగిలింది (నెలలు)",
     chargerIncluded: "ఛార్జర్ ఇస్తారు", chargeTime: "ఛార్జింగ్ సమయం (గంటలు)", yes: "అవును", no: "లేదు",
     evDetails: "⚡ EV వివరాలు", description: "వివరణ", seller: "అమ్మేవారు",
-    whatsapp: "WhatsApp", call: "కాల్ చేయండి", share: "షేర్", report: "రిపోర్ట్",
+    whatsapp: "WhatsApp", call: "కాల్ చేయండి", share: "షేర్", report: "ఫిర్యాదు",
     safety: "జాగ్రత్త: వాహనం చూడకుండా, RC పేపర్లు చెక్ చేయకుండా ముందుగా డబ్బు పంపవద్దు.",
     demo: "DEMO మోడ్: ఇవి నమూనా వాహనాలు. Firebase సెటప్ చేశాక నిజమైన డేటా వస్తుంది.",
     views: "వ్యూస్", posted: "పోస్ట్ చేసింది"

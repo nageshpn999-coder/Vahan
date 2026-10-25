@@ -161,12 +161,12 @@ function render(v, isOwner) {
   };
 
   document.getElementById("reportBtn").onclick = async () => {
-    const reason = prompt(te ? "సమస్య ఏమిటి? (మోసం / తప్పు సమాచారం / అమ్ముడైపోయింది / ఇతర)" : "What's wrong? (fraud / wrong info / already sold / other)");
+    const reason = prompt(te ? "మీ ఫిర్యాదు ఏమిటి? (మోసం / తప్పు సమాచారం / అమ్ముడైపోయింది / ఇతర)" : "What's wrong? (fraud / wrong info / already sold / other)");
     if (!reason) return;
-    if (DEMO) return toast(te ? "DEMO: రిపోర్ట్ సేవ్ కాదు" : "DEMO: report not saved");
+    if (DEMO) return toast(te ? "DEMO: ఫిర్యాదు సేవ్ కాదు" : "DEMO: report not saved");
     try {
       await fb.addDoc(fb.collection(db, "reports"), { vehicleId: v.id, reason: reason.slice(0, 300), createdAt: Date.now(), status: "open" });
-      toast(te ? "ధన్యవాదాలు! అడ్మిన్ చెక్ చేస్తారు." : "Thanks! Admin will review.");
+      toast(te ? "ధన్యవాదాలు! మీ ఫిర్యాదు అడ్మిన్ చెక్ చేస్తారు." : "Thanks! Admin will review.");
     } catch (e) { toast("Error: " + (e.code || e.message)); }
   };
 }
