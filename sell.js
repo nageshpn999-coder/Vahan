@@ -352,7 +352,8 @@ async function submit() {
 const P = te ? {
   posted: "✅ మీ వాహనం సేవ్ అయింది!", title: "చివరి స్టెప్: లిస్టింగ్ ఫీజు చెల్లించండి",
   offer: "🎉 లాంచ్ ఆఫర్", why: "చెల్లింపు చెక్ చేసిన తర్వాత మీ వాహనం 60 రోజులు అందరికీ కనిపిస్తుంది. ఫీజు వల్ల నిజమైన అమ్మకందారులు మాత్రమే ఉంటారు — కొనేవారికి నమ్మకం.",
-  upi: "📱 PhonePe / Google Pay / Paytm తో చెల్లించండి", qr: "లేదా వేరే ఫోన్‌తో ఈ QR స్కాన్ చేయండి / ఈ UPI ID కి పంపండి:",
+  upi: "📱 PhonePe / Google Pay / Paytm తో చెల్లించండి", alt: "పై బటన్ పనిచేయకపోతే — ఈ QR స్కాన్ చేసి చెల్లించండి", enter: (a) => `${a} ఎంటర్ చేయండి`,
+  save: "⬇️ QR ఫోటో సేవ్ చేయండి", steps: ["పై బటన్‌తో QR ఫోటో సేవ్ చేయండి (లేదా స్క్రీన్‌షాట్ తీయండి)", "PhonePe / GPay లో Scan → 🖼️ గ్యాలరీ నుంచి ఆ ఫోటో ఎంచుకోండి", "అమౌంట్ టైప్ చేసి చెల్లించండి, తర్వాత UTR కింద పెట్టండి"],
   copy: "కాపీ", copied: "UPI ID కాపీ అయింది", utr: "చెల్లించాక UTR / Transaction ID ఇక్కడ పెట్టండి",
   utrHint: "PhonePe / GPay లో పేమెంట్ వివరాల్లో 12 అంకెల UTR నంబర్ ఉంటుంది.", submit: "✓ చెల్లించాను — సబ్మిట్ చేయండి",
   later: "తర్వాత చెల్లిస్తారా? \"నా వాహనాలు\" పేజీలో \"💰 చెల్లించండి\" బటన్ ఉంటుంది.",
@@ -361,7 +362,8 @@ const P = te ? {
 } : {
   posted: "✅ Your vehicle is saved!", title: "Last step: pay the listing fee",
   offer: "🎉 Launch offer", why: "After we verify the payment, your vehicle is visible to everyone for 60 days. The fee keeps only genuine sellers — buyers trust it more.",
-  upi: "📱 Pay with PhonePe / Google Pay / Paytm", qr: "Or scan this QR from another phone / send to this UPI ID:",
+  upi: "📱 Pay with PhonePe / Google Pay / Paytm", alt: "If the button doesn't work — scan this QR to pay", enter: (a) => `Enter ${a}`,
+  save: "⬇️ Save QR image", steps: ["Save the QR image with the button above (or take a screenshot)", "In PhonePe / GPay tap Scan → 🖼️ choose the image from gallery", "Type the amount, pay, then enter the UTR below"],
   copy: "Copy", copied: "UPI ID copied", utr: "After paying, enter the UTR / Transaction ID",
   utrHint: "The 12-digit UTR is in the payment details in PhonePe / GPay.", submit: "✓ I have paid — submit",
   later: "Pay later? Use the \"💰 Pay\" button on the My vehicles page.",
@@ -390,14 +392,30 @@ function showPay(v, justPosted) {
   $("payWhy").textContent = P.why;
   const link = upiLink(fee, note);
   $("payUpi").textContent = P.upi; $("payUpi").href = link;
-  $("payQrNote").textContent = P.qr;
-  $("payUpiId").textContent = pay.upiId;
+  $("payAltTitle").textContent = P.alt;
+  $("payEnter").textContent = P.enter(fmtPrice(fee));
+  $("paySteps").innerHTML = P.steps.map(x => `<li>${esc(x)}</li>`).join("");
+  const bizId = pay.businessUpiId || pay.upiId;
+  $("payUpiId").textContent = bizId;
   $("payCopy").textContent = P.copy;
-  $("payCopy").onclick = async () => { try { await navigator.clipboard.writeText(pay.upiId); toast(P.copied); } catch {} };
-  try {
-    const qr = window.qrcode(0, "M"); qr.addData(link); qr.make();
-    $("payQr").innerHTML = qr.createImgTag(6, 8);
-  } catch { $("payQr").hidden = true; }
+  $("payCopy").onclick = async () => { try { await navigator.clipboard.writeText(bizId); toast(P.copied); } catch {} };
+  $("paySaveQr").textContent = P.save;
+  // బిజినెస్ QR: అధికారిక ఫోటో ఉంటే అది, లేకపోతే ఆటోమేటిక్ QR (అమౌంట్ లేకుండా)
+  const useGenerated = () => {
+    try {
+      const qr = window.qrcode(0, "M");
+      qr.addData(`upi://pay?pa=${bizId}&pn=${encodeURIComponent(pay.businessName || pay.payeeName)}&cu=INR`); qr.make();
+      const url = qr.createDataURL(8, 16);
+      $("payQr").innerHTML = `<img src="${url}" alt="UPI QR">`;
+      $("paySaveQr").href = url;
+    } catch { $("payQr").hidden = true; $("paySaveQr").hidden = true; }
+  };
+  if (pay.qrImage) {
+    const im = new Image();
+    im.onload = () => { $("payQr").innerHTML = ""; im.alt = "UPI QR"; $("payQr").appendChild(im); $("paySaveQr").href = pay.qrImage; };
+    im.onerror = useGenerated;
+    im.src = pay.qrImage;
+  } else useGenerated();
   $("payUtrLbl").textContent = P.utr; $("payUtrHint").textContent = P.utrHint;
   $("paySubmit").textContent = P.submit; $("payLater").textContent = P.later;
   $("paySubmit").onclick = async () => {

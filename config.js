@@ -29,8 +29,11 @@ export const site = {
   // వాహనం పోస్ట్ చేయడానికి ఫీజు (UPI). enabled: false చేస్తే ఉచితం అవుతుంది
   payment: {
     enabled: true,
-    upiId: "Q203723761@ybl",
+    upiId: "9959731120@ybl",          // ఒక్క-క్లిక్ పేమెంట్ బటన్ కోసం (పర్సనల్ UPI)
     payeeName: "Vahan",
+    businessUpiId: "Q203723761@ybl",  // బిజినెస్ QR (స్కాన్ చేసి చెల్లించడానికి)
+    businessName: "OnlineLand",
+    qrImage: "upi-qr.jpg",            // PhonePe Business QR ఫోటో (GitHub లో ఈ పేరుతో పెట్టండి). లేకపోతే ఆటోమేటిక్ QR
     fees: { bike: 49, scooter: 49, auto: 79, car: 99, tractor: 99, commercial: 99, other: 49 },
     launchOffer: false,            // true చేస్తే అన్ని వాహనాలకూ launchPrice మాత్రమే (ఆఫర్)
     launchPrice: 19
