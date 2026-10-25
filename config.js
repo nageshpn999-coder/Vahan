@@ -26,6 +26,15 @@ export const site = {
   maxActivePerUser: 5,             // ఒక్కో యూజర్‌కు ఒకేసారి ఎన్ని లిస్టింగ్‌లు
   maxPhotos: 8,
   phoneOtp: false,                 // Firebase బిల్లింగ్ (Blaze) వచ్చాక true చేస్తే ఫోన్ OTP లాగిన్ కూడా వస్తుంది
+  // వాహనం పోస్ట్ చేయడానికి ఫీజు (UPI). enabled: false చేస్తే ఉచితం అవుతుంది
+  payment: {
+    enabled: true,
+    upiId: "Q203723761@ybl",
+    payeeName: "Vahan",
+    fees: { bike: 49, scooter: 49, auto: 79, car: 99, tractor: 99, commercial: 99, other: 49 },
+    launchOffer: false,            // true చేస్తే అన్ని వాహనాలకూ launchPrice మాత్రమే (ఆఫర్)
+    launchPrice: 19
+  },
   boostPrices: { bike: 99, scooter: 99, car: 299, auto: 199, tractor: 299, commercial: 299, other: 99 }
 };
 
