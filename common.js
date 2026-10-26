@@ -293,3 +293,33 @@ export async function isAdmin(user) {
   if (!user || DEMO) return false;
   try { return (await getDoc(doc(db, "admins", user.uid))).exists(); } catch { return false; }
 }
+
+// ---------- యాప్ (PWA): సర్వీస్ వర్కర్ + "యాప్ ఇన్‌స్టాల్ చేయండి" బ్యానర్ ----------
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+let installEvt = null;
+const isApp = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault(); installEvt = e;
+  let off = false; try { off = Number(localStorage.getItem("rk_install_off") || 0) > Date.now(); } catch {}
+  if (!off && !isApp()) showInstallBar();
+});
+window.addEventListener("appinstalled", () => { installEvt = null; document.getElementById("installBar")?.remove(); toast(getLang() === "te" ? "✓ RideKart యాప్ ఇన్‌స్టాల్ అయింది" : "✓ RideKart app installed"); });
+function showInstallBar() {
+  if (document.getElementById("installBar")) return;
+  const te = getLang() === "te";
+  const bar = document.createElement("div");
+  bar.id = "installBar"; bar.className = "install-bar";
+  bar.innerHTML = `<img src="icon-192.png" alt=""><div><b>${te ? "RideKart యాప్" : "RideKart app"}</b><small>${te ? "హోమ్ స్క్రీన్‌పై పెట్టుకోండి — ఒక్క టచ్‌తో తెరవండి" : "Add to home screen — open in one tap"}</small></div>
+    <button class="btn btn-sell btn-sm" id="installGo">📲 ${te ? "ఇన్‌స్టాల్" : "Install"}</button><button class="install-x" id="installX" aria-label="Close">✕</button>`;
+  document.body.appendChild(bar);
+  bar.querySelector("#installGo").onclick = async () => {
+    if (!installEvt) return bar.remove();
+    installEvt.prompt(); await installEvt.userChoice.catch(() => {}); installEvt = null; bar.remove();
+  };
+  bar.querySelector("#installX").onclick = () => {
+    try { localStorage.setItem("rk_install_off", String(Date.now() + 7 * 86400000)); } catch {}
+    bar.remove();
+  };
+}

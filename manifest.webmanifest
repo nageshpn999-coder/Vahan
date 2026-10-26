@@ -1,0 +1,24 @@
+{
+  "name": "RideKart — వాహనాలు కొనండి, అమ్మండి",
+  "short_name": "RideKart",
+  "description": "మీ దగ్గరలోని సెకండ్ హ్యాండ్ బైక్‌లు, స్కూటర్లు, కార్లు, ఆటోలు, ట్రాక్టర్లు, ఎలక్ట్రిక్ వాహనాలు.",
+  "id": "/",
+  "start_url": "/?source=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14213d",
+  "theme_color": "#14213d",
+  "lang": "te",
+  "categories": ["shopping", "auto"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "వాహనం అమ్మండి", "short_name": "అమ్మండి", "url": "/sell.html", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "నా వాహనాలు", "short_name": "నా వాహనాలు", "url": "/my.html", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+  ]
+}
