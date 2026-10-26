@@ -1,5 +1,5 @@
 // ============================================================
-//  Vahan — సెట్టింగ్‌లు (SETUP.md లో చెప్పినట్టు ఇవి మార్చండి)
+//  RideKart — సెట్టింగ్‌లు (SETUP.md లో చెప్పినట్టు ఇవి మార్చండి)
 // ============================================================
 
 // 1) Firebase Console → Project settings → Your apps → Web app config
@@ -20,7 +20,7 @@ export const cloudinary = {
 
 // 3) మీ వివరాలు
 export const site = {
-  name: "Vahan",
+  name: "RideKart",
   adminWhatsApp: "919959731120",   // బూస్ట్ / డీలర్ ప్లాన్ / సహాయం కోసం
   listingDays: 60,                 // ఎన్ని రోజుల తర్వాత లిస్టింగ్ ఎక్స్‌పైర్ అవుతుంది
   maxActivePerUser: 5,             // ఒక్కో యూజర్‌కు ఒకేసారి ఎన్ని లిస్టింగ్‌లు
@@ -30,7 +30,7 @@ export const site = {
   payment: {
     enabled: true,
     upiId: "9959731120@ybl",          // ఒక్క-క్లిక్ పేమెంట్ బటన్ కోసం (పర్సనల్ UPI)
-    payeeName: "Vahan",
+    payeeName: "RideKart",
     businessUpiId: "Q203723761@ybl",  // బిజినెస్ QR (స్కాన్ చేసి చెల్లించడానికి)
     businessName: "OnlineLand",
     qrImage: "upi-qr.jpg",            // PhonePe Business QR ఫోటో (GitHub లో ఈ పేరుతో పెట్టండి). లేకపోతే ఆటోమేటిక్ QR

@@ -248,7 +248,7 @@ export function renderHeader(active) {
   const other = getLang() === "te" ? "EN" : "తె";
   h.innerHTML = `
     <div class="bar">
-      <a class="logo" href="index.html"><span class="logo-mark">V</span><span>${site.name}</span></a>
+      <a class="logo" href="index.html"><span class="logo-mark">R</span><span>${site.name}</span></a>
       <nav>
         <a href="my.html" class="${active === "my" ? "on" : ""}" data-i18n="my"></a>
         <button class="lang" id="langBtn" aria-label="Language">${other}</button>

@@ -1,4 +1,4 @@
-// WhatsApp పోస్టర్: వాహనం ఫోటో + ధర + వివరాలు + Vahan బ్రాండింగ్ ఉన్న రంగుల ఇమేజ్ తయారుచేసి షేర్ చేయడం
+// WhatsApp పోస్టర్: వాహనం ఫోటో + ధర + వివరాలు + RideKart బ్రాండింగ్ ఉన్న రంగుల ఇమేజ్ తయారుచేసి షేర్ చేయడం
 import { fmtPrice, fmtKm, fuelLabel, title, placeLabel, getLang, catIcon, catLabel, isFeatured, toast, site } from "./common.js";
 
 const W = 1080, H = 1350;   // WhatsApp Status కు సరిపోయే 4:5 సైజ్
@@ -82,7 +82,7 @@ export async function makePoster(v) {
   // 2) లోగో + వాహన రకం
   ctx.fillStyle = "#ffffff"; rr(ctx, 48, 40, 76, 76, 20); ctx.fill();
   ctx.fillStyle = "#151b2b"; ctx.font = `800 54px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.fillText("V", 86, 80);
+  ctx.fillText("R", 86, 80);
   ctx.textAlign = "left"; ctx.fillStyle = "#fff"; ctx.font = `800 50px ${FONT}`;
   ctx.fillText(site.name, 140, 80);
   ctx.font = `700 32px ${FONT}`;
@@ -157,7 +157,7 @@ export async function makePoster(v) {
   ctx.fillStyle = strip; rr(ctx, 36, by, W - 72, 92, 46); ctx.fill();
   const ctaInk = key === "featured" || key === "auto" ? "#1a1300" : "#fff";
   ctx.fillStyle = ctaInk; ctx.textBaseline = "middle"; ctx.font = `800 38px ${FONT}`;
-  ctx.fillText(te ? "👉 Vahan లో చూడండి" : "👉 See it on Vahan", 76, by + 32);
+  ctx.fillText(te ? "👉 RideKart లో చూడండి" : "👉 See it on RideKart", 76, by + 32);
   ctx.fillStyle = ctaInk === "#fff" ? "rgba(255,255,255,.85)" : "rgba(26,19,0,.8)"; ctx.font = `600 26px ${FONT}`;
   ctx.fillText(fit(ctx, `${location.host}${location.pathname.replace(/[^/]*$/, "")}`, W - 160), 76, by + 66);
 
@@ -175,7 +175,7 @@ export async function sharePoster(v, link) {
   toast(te ? "పోస్టర్ తయారవుతోంది…" : "Making poster…");
   const blob = await makePoster(v);
   if (!blob) { toast(te ? "పోస్టర్ తయారు కాలేదు" : "Could not make poster"); return; }
-  const file = new File([blob], `vahan-${v.id || "vehicle"}.jpg`, { type: "image/jpeg" });
+  const file = new File([blob], `ridekart-${v.id || "vehicle"}.jpg`, { type: "image/jpeg" });
   const text = `${title(v)} ${v.year || ""} — ${fmtPrice(v.price)}\n📍 ${placeLabel(v)}\n${te ? "వివరాలు, ఫోటోలు:" : "Details & photos:"} ${link}`;
   try {
     if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }

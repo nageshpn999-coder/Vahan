@@ -130,7 +130,7 @@ async function startForm() {
     const s = await fb.getDocs(fb.query(fb.collection(db, "vehicles"), fb.where("ownerUid", "==", user.uid)));
     const active = s.docs.map(d => d.data()).filter(v => ["pending", "approved"].includes(v.status) && (!v.expiresAt || v.expiresAt > Date.now()));
     if (active.length >= site.maxActivePerUser && !active.some(v => v.dealer)) {
-      $("sellBox").innerHTML = `<p>${esc(L.limit)}</p><a class="btn btn-wa" href="https://wa.me/${site.adminWhatsApp}?text=${encodeURIComponent("Vahan dealer plan")}">💬 WhatsApp</a>`;
+      $("sellBox").innerHTML = `<p>${esc(L.limit)}</p><a class="btn btn-wa" href="https://wa.me/${site.adminWhatsApp}?text=${encodeURIComponent("RideKart dealer plan")}">💬 WhatsApp</a>`;
       return;
     }
   }
@@ -392,7 +392,7 @@ function showPay(v, justPosted) {
   }
   const fee = v.fee || listingFee(v.category);
   const short = v.id.slice(0, 6).toUpperCase();
-  const note = `Vahan ${short} ${title(v)}`.slice(0, 40);
+  const note = `RideKart ${short} ${title(v)}`.slice(0, 40);
   $("payPosted").textContent = justPosted ? P.posted : "";
   $("payTitle").textContent = P.title;
   $("payAmt").textContent = fmtPrice(fee);

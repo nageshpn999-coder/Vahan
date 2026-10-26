@@ -71,7 +71,7 @@ function notFound(msg) {
 
 function render(v, isOwner) {
   const name = title(v);
-  document.title = `${name} ${v.year || ""} — ${fmtPrice(v.price)} | Vahan`;
+  document.title = `${name} ${v.year || ""} — ${fmtPrice(v.price)} | RideKart`;
   const L = savedLoc();
   const dist = L && v.lat != null ? haversine(L.lat, L.lng, v.lat, v.lng) : null;
   const photos = v.photos || [];
@@ -131,7 +131,7 @@ function render(v, isOwner) {
     </div>
 
     <div class="actions">
-      <a class="btn btn-wa" target="_blank" rel="noopener" href="${waLink(v.ownerPhone, `${te ? "నమస్తే, Vahan లో మీ" : "Hi, I saw your"} ${name} (${fmtPrice(v.price)}) ${te ? "చూశాను. ఇంకా అందుబాటులో ఉందా?" : "on Vahan. Is it still available?"} ${location.href}`)}">💬 ${t("whatsapp")}</a>
+      <a class="btn btn-wa" target="_blank" rel="noopener" href="${waLink(v.ownerPhone, `${te ? "నమస్తే, RideKart లో మీ" : "Hi, I saw your"} ${name} (${fmtPrice(v.price)}) ${te ? "చూశాను. ఇంకా అందుబాటులో ఉందా?" : "on RideKart. Is it still available?"} ${location.href}`)}">💬 ${t("whatsapp")}</a>
       <a class="btn" href="tel:${esc(v.ownerPhone)}">📞 ${t("call")}</a>
     </div>`;
 
@@ -156,7 +156,7 @@ function render(v, isOwner) {
   document.getElementById("posterBtn").onclick = () => sharePoster(v, location.href);
 
   document.getElementById("shareBtn").onclick = async () => {
-    const data = { title: name, text: `${name} — ${fmtPrice(v.price)} | Vahan`, url: location.href };
+    const data = { title: name, text: `${name} — ${fmtPrice(v.price)} | RideKart`, url: location.href };
     try { if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(location.href); toast(te ? "లింక్ కాపీ అయింది" : "Link copied"); } } catch {}
   };
 
